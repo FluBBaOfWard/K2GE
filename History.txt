@@ -1,0 +1,18 @@
+K2GE revision history
+-=-=-=-=-=-=-=-=-=-=-=-
+
+
+V0.4.0 - 2021-05-28 (FluBBa)
+	Converted to GCC/unified asm.
+ 	Objectified chip.
+	Added load/save state.
+
+V0.3.0 - 2008-10-01 (FluBBa)
+	Fixed HCount register.
+
+V0.1.0 - 2008-07-04 (FluBBa)
+	First GBA release.
+
+V0.0.0 - 2008-04-02 (FluBBa)
+	Started coding.
+

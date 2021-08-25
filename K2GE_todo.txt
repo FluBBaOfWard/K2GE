@@ -1,0 +1,11 @@
+SNK K2GE To do
+--------------
+
+	Optimize scroll writing.
+	*Insert dummy bytes between scroll values to just load u32.
+	*Remove guard for r3.
+
+	Do sprite dma in middle of screen.
+	Check load/save state.
+	Split sprite write in 2 different (lower/upper) functions.
+
