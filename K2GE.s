@@ -8,7 +8,7 @@
 #include "../Shared/nds_asm.h"
 #endif
 #include "K2GE.i"
-#include "../TLCS-900h/TLCS900H.i"	// Used by k2GEHCountR
+#include "../TLCS900H/TLCS900H.i"	// Used by k2GEHCountR
 
 	.global k2GEInit
 	.global k2GEReset
