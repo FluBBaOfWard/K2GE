@@ -915,8 +915,8 @@ tileLoop16_2p:
 	ldr r4,[r5]
 	str r7,[r5],#4
 	ldr r3,[r6]
-	and r4,r4,r3
-	str r4,[r6],#4
+	and r3,r3,r4
+	str r3,[r6],#4
 	tst r4,#0x000000FF
 	addne r2,r2,#0x10
 	bleq tileLoop16_3p

@@ -1,2 +1,2 @@
 # K2GE
-SNK K2GE video chip emulator for GBA/NDS.
+SNK Neogeo Pocket K2GE video chip emulator for GBA/NDS.
