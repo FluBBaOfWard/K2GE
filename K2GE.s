@@ -30,7 +30,11 @@
 	.syntax unified
 	.arm
 
-	.section .text
+#if GBA
+	.section .ewram, "ax", %progbits	;@ For the GBA
+#else
+	.section .text						;@ For anything else
+#endif
 	.align 2
 ;@----------------------------------------------------------------------------
 k2GEInit:					;@ Only need to be called once
@@ -902,7 +906,7 @@ cData:
 ;@----------------------------------------------------------------------------
 k2GETransferVRAM:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r9,lr}
+	stmfd sp!,{r4-r11,lr}
 	adr r0,tData
 	ldmia r0,{r5}
 	add r6,r5,#0x300
@@ -932,15 +936,14 @@ tileLoop16_2p:
 	cmp r2,#0x3000
 	bne tileLoop16_2p
 
-	ldmfd sp!,{r4-r9,pc}
+	ldmfd sp!,{r4-r11,pc}
 
 tileLoop16_3p:
-	ldrd r8,r9,[r1,r2]
-	strd r8,r9,[r0,r2]
-	add r2,r2,#8
-	ldrd r8,r9,[r1,r2]
-	strd r8,r9,[r0,r2]
-	add r2,r2,#8
+	add r3,r1,r2
+	ldmia r3,{r8-r11}
+	add r3,r0,r2
+	stmia r3,{r8-r11}
+	add r2,r2,#16
 
 	bx lr
 
