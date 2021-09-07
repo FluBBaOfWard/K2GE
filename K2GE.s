@@ -1119,7 +1119,11 @@ dm5:
 	tst r7,#0x80
 	ldrbeq r0,[r9],#1			;@ Color palette
 	orr r3,r3,r0,lsl#12
-	rsb r6,r6,#0x1800			;@ Convert prio
+#ifdef NDS
+	rsb r6,r6,#0x1800			;@ Convert prio NDS
+#elif GBA
+	rsb r6,r6,#0x2000			;@ Convert prio GBA
+#endif
 	orr r3,r3,r6,lsr#1
 
 	strh r3,[r11],#4			;@ Store OBJ Atr 2. Pattern, palette.
