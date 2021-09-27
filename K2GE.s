@@ -153,11 +153,11 @@ k2GESaveState:		;@ In r0=destination, r1=geptr. Out r0=state size.
 	ldr r2,=0x3360
 	add r0,r4,r2
 	add r1,r5,#k2GEState
-	mov r2,#0x14
+	mov r2,#(k2GEStateSize-k2GEState)
 	bl memcpy
 
 	ldmfd sp!,{r4,r5,lr}
-	ldr r0,=0x3360+0x14
+	ldr r0,=0x3360+(k2GEStateSize-k2GEState)
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
@@ -174,8 +174,13 @@ k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
 	ldr r2,=0x3360
 	add r0,r5,#k2GEState
 	add r1,r4,r2
-	mov r2,#0x14
+	mov r2,#(k2GEStateSize-k2GEState)
 	bl memcpy
+
+	ldr r0,tData			;@ DIRTY_TILES
+	mov r1,#0
+	mov r2,#0x600
+	bl memset
 
 	mov geptr,r5
 	bl endFrame
@@ -184,7 +189,7 @@ k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
 k2GEGetStateSize:	;@ Out r0=state size.
 	.type   k2GEGetStateSize STT_FUNC
 ;@----------------------------------------------------------------------------
-	ldr r0,=0x3360+0x14
+	ldr r0,=0x3360+(k2GEStateSize-k2GEState)
 	bx lr
 
 ;@----------------------------------------------------------------------------
