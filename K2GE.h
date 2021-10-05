@@ -28,10 +28,10 @@ typedef struct {
 	u8 kgeWinYPos;
 	u8 kgeWinXSize;
 	u8 kgeWinYSize;
-	u8 kgeBGXScroll;
-	u8 kgeBGYScroll;
-	u8 kgeFGXScroll;
-	u8 kgeFGYScroll;
+	u8 kgeBGXScroll[2];
+	u8 kgeBGYScroll[2];
+	u8 kgeFGXScroll[2];
+	u8 kgeFGYScroll[2];
 
 	u8 kgeSprXOfs;
 	u8 kgeSprYOfs;

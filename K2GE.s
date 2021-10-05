@@ -3,9 +3,9 @@
 #ifdef __arm__
 
 #ifdef GBA
-#include "../Shared/gba_asm.h"
+	#include "../Shared/gba_asm.h"
 #elif NDS
-#include "../Shared/nds_asm.h"
+	#include "../Shared/nds_asm.h"
 #endif
 #include "K2GE.i"
 #include "../TLCS900H/TLCS900H.i"	// Used by k2GEHCountR
@@ -70,12 +70,12 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 
 	mov r0,geptr
 	ldr r1,=k2GESize/4
-	bl memclr_						;@ Clear K2GE state
+	bl memclr_					;@ Clear K2GE state
 
 	ldr r2,=lineStateTable
 	ldr r1,[r2],#4
 	mov r0,#0
-	stmia geptr,{r0-r2}				;@ Reset scanline, nextChange & lineState
+	stmia geptr,{r0-r2}			;@ Reset scanline, nextChange & lineState
 
 	ldmfd sp!,{r0-r3,lr}
 	cmp r0,#0
@@ -99,8 +99,8 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 
 	strb r3,[geptr,#kgeModel]
 	cmp r3,#HW_K1GE
-	movne r0,#0x00					;@ Use Color mode.
-	moveq r0,#0x80					;@ Use B&W mode.
+	movne r0,#0x00				;@ Use Color mode.
+	moveq r0,#0x80				;@ Use B&W mode.
 	strb r0,[geptr,#kgeMode]
 	ldrne r0,=k2GEPaletteW
 	ldreq r0,=k2GEBadW
@@ -143,8 +143,8 @@ k2GESaveState:		;@ In r0=destination, r1=geptr. Out r0=state size.
 	.type   k2GESaveState STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4,r5,lr}
-	mov r4,r0				;@ Store destination
-	mov r5,r1				;@ Store geptr (r1)
+	mov r4,r0					;@ Store destination
+	mov r5,r1					;@ Store geptr (r1)
 
 	ldr r1,[r5,#gfxRAM]
 	ldr r2,=0x3360
@@ -164,8 +164,8 @@ k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
 	.type   k2GELoadState STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4,r5,lr}
-	mov r5,r0				;@ Store geptr (r0)
-	mov r4,r1				;@ Store source
+	mov r5,r0					;@ Store geptr (r0)
+	mov r4,r1					;@ Store source
 
 	ldr r0,[r5,#gfxRAM]
 	ldr r2,=0x3360
@@ -177,7 +177,7 @@ k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
 	mov r2,#(k2GEStateSize-k2GEState)
 	bl memcpy
 
-	ldr r0,tData			;@ DIRTY_TILES
+	ldr r0,=DIRTYTILES
 	mov r1,#0
 	mov r2,#0x600
 	bl memset
@@ -199,9 +199,9 @@ k2GEGetStateSize:	;@ Out r0=state size.
 ;@----------------------------------------------------------------------------
 k2GEBufferWindows:
 ;@----------------------------------------------------------------------------
-	ldr r0,[geptr,#kgeWinXPos]	;@ win pos/size
-	and r1,r0,#0x000000FF			;@ h start
-	and r2,r0,#0x00FF0000			;@ h size
+	ldr r0,[geptr,#kgeWinXPos]	;@ Win pos/size
+	and r1,r0,#0x000000FF		;@ H start
+	and r2,r0,#0x00FF0000		;@ H size
 	cmp r1,#GAME_WIDTH
 	movpl r1,#GAME_WIDTH
 	add r1,r1,#(SCREEN_WIDTH-GAME_WIDTH)/2
@@ -212,8 +212,8 @@ k2GEBufferWindows:
 	mov r1,r1,ror#24
 	strh r1,[geptr,#windowData]
 
-	and r1,r0,#0x0000FF00		;@ v start
-	mov r2,r0,lsr#24			;@ v size
+	and r1,r0,#0x0000FF00		;@ V start
+	mov r2,r0,lsr#24			;@ V size
 	cmp r1,#GAME_HEIGHT<<8
 	movpl r1,#GAME_HEIGHT<<8
 	add r1,r1,#((SCREEN_HEIGHT-GAME_HEIGHT)/2)<<8
@@ -430,7 +430,7 @@ k2GEExtraR:					;@ 0x87XX
 k2GEResetR:					;@ 0x87E0
 ;@----------------------------------------------------------------------------
 	mov r11,r11
-	mov r0,#0				;@ should return 1? !!!
+	mov r0,#0					;@ should return 1? !!!
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GEModeR:					;@ 0x87E2
@@ -448,7 +448,7 @@ k2GEInputPortR:				;@ 0x87FE (Reserved)
 ;@----------------------------------------------------------------------------
 	mov r11,r11
 	mov r0,#0x3F
-//	orrne r0,r0,#0x40		;@ INP0
+//	orrne r0,r0,#0x40			;@ INP0
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GESpriteR:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
@@ -456,7 +456,6 @@ k2GESpriteR:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
 	tst r0,#0x0700
 	ldr r2,[geptr,#sprRAM]
 	mov r1,r0,lsl#24
-//	ldrbeq r0,[r2,r1,lsr#24]
 	addne r2,r2,#0x100
 	tstne r1,#0xC0000000
 	ldrbeq r0,[r2,r1,lsr#24]
@@ -464,12 +463,14 @@ k2GESpriteR:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
 ;@----------------------------------------------------------------------------
 GetHInt:
 ;@----------------------------------------------------------------------------
-	ldrb r1,[geptr,#kgeIrqEnable]
 
-	ldr r0,[geptr,#scanline]
-	cmp r0,#152					;@ Should this be WIN_VStart + WIN_VSize?
 	mov r0,#0
+	ldr r1,[geptr,#scanline]
+	cmp r1,#151					;@ Should this be WIN_VStart + WIN_VSize?
 	movmi r0,#1
+	cmp r1,#198
+	moveq r0,#1
+	ldrb r1,[geptr,#kgeIrqEnable]
 	and r0,r0,r1,lsr#6
 	bx lr
 
@@ -587,77 +588,70 @@ k2GEBgPrioW:				;@ 0x8030
 ;@----------------------------------------------------------------------------
 k2GEBgScrXW:				;@ 0x8032, Background Horizontal Scroll register
 ;@----------------------------------------------------------------------------
-	ldrb r1,[geptr,#kgeBGXScroll]
+#ifdef NDS
+	ldrd r2,r3,[geptr,#kgeBGXScroll]
+#else
+	ldr r2,[geptr,#kgeBGXScroll]
+	ldr r3,[geptr,#kgeFGXScroll]
+#endif
 	strb r0,[geptr,#kgeBGXScroll]
-	ldrb r0,[geptr,#kgeBGYScroll]
-	orr r1,r1,r0,lsl#16
-	b bgScrCnt
+	b scrollCnt
 
 ;@----------------------------------------------------------------------------
 k2GEBgScrYW:				;@ 0x8033, Background Vertical Scroll register
 ;@----------------------------------------------------------------------------
-	ldrb r1,[geptr,#kgeBGYScroll]
+#ifdef NDS
+	ldrd r2,r3,[geptr,#kgeBGXScroll]
+#else
+	ldr r2,[geptr,#kgeBGXScroll]
+	ldr r3,[geptr,#kgeFGXScroll]
+#endif
 	strb r0,[geptr,#kgeBGYScroll]
-	ldrb r0,[geptr,#kgeBGXScroll]
-	orr r1,r0,r1,lsl#16
-bgScrCnt:
-
-	ldr r2,[geptr,#scanline]	;@ r2=scanline
-	cmp r2,#159
-	movhi r2,#159
-	ldr r0,bgScrollLine
-	cmp r0,r2
-	bxhi lr
-	str r2,bgScrollLine
-
-	ldr r3,[geptr,#scrollBuff]
-	add r0,r3,r0,lsl#3
-	add r2,r3,r2,lsl#3
-sy1:
-	cmp r2,r0
-	strpl r1,[r2],#-8				;@ Fill backwards from scanline to lastline
-	bhi sy1
-	bx lr
-
-bgScrollLine: .long 0 ;@ ..was when?
+	b scrollCnt
 
 ;@----------------------------------------------------------------------------
 k2GEFgScrXW:				;@ 0x8034, Foreground Horizontal Scroll register
 ;@----------------------------------------------------------------------------
-	ldrb r1,[geptr,#kgeFGXScroll]
+#ifdef NDS
+	ldrd r2,r3,[geptr,#kgeBGXScroll]
+#else
+	ldr r2,[geptr,#kgeBGXScroll]
+	ldr r3,[geptr,#kgeFGXScroll]
+#endif
 	strb r0,[geptr,#kgeFGXScroll]
-	ldrb r0,[geptr,#kgeFGYScroll]
-	orr r1,r1,r0,lsl#16
-	b fgScrCnt
+	b scrollCnt
 
 ;@----------------------------------------------------------------------------
 k2GEFgScrYW:				;@ 0x8035, Foreground Vertical Scroll register
 ;@----------------------------------------------------------------------------
-	ldrb r1,[geptr,#kgeFGYScroll]
+#ifdef NDS
+	ldrd r2,r3,[geptr,#kgeBGXScroll]
+#else
+	ldr r2,[geptr,#kgeBGXScroll]
+	ldr r3,[geptr,#kgeFGXScroll]
+#endif
 	strb r0,[geptr,#kgeFGYScroll]
-	ldrb r0,[geptr,#kgeFGXScroll]
-	orr r1,r0,r1,lsl#16
-fgScrCnt:
+scrollCnt:
 
-	ldr r2,[geptr,#scanline]	;@ r2=scanline
-	cmp r2,#159
-	movhi r2,#159
-	ldr r0,fgScrollLine
-	cmp r0,r2
-	bxhi lr
-	str r2,fgScrollLine
+	ldr r1,[geptr,#scanline]	;@ r1=scanline
+	add r1,r1,#1
+	cmp r1,#159
+	movhi r1,#159
+	ldr r0,scrollLine
+	subs r0,r1,r0
+	strhi r1,scrollLine
 
+	stmfd sp!,{r3}
 	ldr r3,[geptr,#scrollBuff]
-	add r3,r3,#4
-	add r0,r3,r0,lsl#3
-	add r2,r3,r2,lsl#3
+	add r1,r3,r1,lsl#3
+	ldmfd sp!,{r3}
 sy2:
-	cmp r2,r0
-	strpl r1,[r2],#-8				;@ Fill backwards from scanline to lastline
+	stmdbhi r1!,{r2,r3}			;@ Fill backwards from scanline to lastline
+	subs r0,r0,#1
 	bhi sy2
 	bx lr
 
-fgScrollLine: .long 0 ;@ ..was when?
+scrollLine: .long 0 ;@ ..was when?
 
 ;@----------------------------------------------------------------------------
 k2GEPaletteMonoW:			;@ 0x8100-0x8118
@@ -786,7 +780,7 @@ midFrame:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 	bl k2GETransferVRAM
-	ldr r0,=tmpOamBuffer			;@ Destination
+	ldr r0,=tmpOamBuffer		;@ Destination
 	ldr r0,[r0]
 	bl k2GEConvertSprites
 	bl k2GEBufferWindows
@@ -795,19 +789,20 @@ midFrame:
 ;@----------------------------------------------------------------------------
 endFrame:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{lr}
+	bx lr
+;@----------------------------------------------------------------------------
+checkFrameIRQ:
+;@----------------------------------------------------------------------------
+	stmfd sp!,{geptr,lr}
 	ldrb r0,[geptr,#kgeBGXScroll]
 	bl k2GEBgScrXW
 	ldrb r0,[geptr,#kgeFGXScroll]
 	bl k2GEFgScrXW
 	ldmfd sp!,{lr}
-	b endFrameGfx
-;@----------------------------------------------------------------------------
-checkFrameIRQ:
-;@----------------------------------------------------------------------------
+	bl endFrameGfx
+
 	ldrb r0,[geptr,#kgeIrqEnable]
 	tst r0,#0x80				;@ VBlank IRQ
-	stmfd sp!,{geptr,lr}
 	movne r0,#0x0B				;@ 0x0B = VBlank
 	blne TestIntHDMA_External
 //	movne lr,pc
@@ -834,8 +829,7 @@ noLedBlink:
 	strb r0,[geptr,#kgeLedOnOff]
 
 	mov r0,#0
-	str r0,bgScrollLine
-	str r0,fgScrollLine
+	str r0,scrollLine
 
 	ldr r2,=lineStateTable
 	ldr r1,[r2],#4
@@ -848,9 +842,6 @@ noLedBlink:
 ;@----------------------------------------------------------------------------
 newFrame:					;@ Called before line 0
 ;@----------------------------------------------------------------------------
-//	mov r0,#0
-//	str r0,[geptr,#scanline]	;@ Reset scanline count
-//	strb r0,lineState			;@ Reset line state
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -886,17 +877,18 @@ k2GEDoScanline:
 ;@----------------------------------------------------------------------------
 checkScanlineIRQ:
 ;@----------------------------------------------------------------------------
-	cmp r0,#152
-	movpl r0,#1
-	
-	stmfd sp!,{lr}
-	ldrb r0,[geptr,#kgeIrqEnable]
-	ands r0,r0,#0x40			;@ HIRQ enabled?
-	movne lr,pc
-	ldrne pc,[geptr,#periodicIrqFunc]
-
+//	cmp r0,#152
 	mov r0,#1
-	ldmfd sp!,{pc}
+	bx lr
+	
+//	stmfd sp!,{lr}
+//	ldrb r0,[geptr,#kgeIrqEnable]
+//	ands r0,r0,#0x40			;@ HIRQ enabled?
+//	movne lr,pc
+//	ldrne pc,[geptr,#periodicIrqFunc]
+
+//	mov r0,#1
+//	ldmfd sp!,{pc}
 
 ;@----------------------------------------------------------------------------
 tData:
@@ -907,7 +899,7 @@ cData:
 	.long BG_GFX+0x08000		;@ BGR tiles
 	.long BG_GFX+0x0C000		;@ BGR tiles2
 	.long SPRITE_GFX			;@ SPR tiles
-	.long 0x44444444			;@ tile2 mask
+	.long 0x44444444			;@ Tile2 mask
 ;@----------------------------------------------------------------------------
 k2GETransferVRAM:
 ;@----------------------------------------------------------------------------
@@ -1042,7 +1034,7 @@ bgMono:
 	ldr r0,[r3],#4				;@ Read from NeoGeo Pocket Tilemap RAM
 	bic r1,r0,r5
 	and r2,r0,r7
-	orr r1,r1,r2,lsr#1			;@ color
+	orr r1,r1,r2,lsr#1			;@ Color
 	and r0,r0,r8				;@ Mask NGP flip bits
 	orr r0,r0,r0,lsr#2
 	and r0,r8,r0,lsl#1
@@ -1144,7 +1136,7 @@ skipSprite:
 
 ;@----------------------------------------------------------------------------
 #ifdef GBA
-	.section .sbss						;@ For the GBA
+	.section .sbss				;@ For the GBA
 #else
 	.section .bss
 #endif

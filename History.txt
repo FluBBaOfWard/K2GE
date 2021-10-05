@@ -2,6 +2,9 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
+V0.5.0 - 2021-10-05 (FluBBa)
+	Fixed scroll value handling.
+
 V0.4.0 - 2021-05-28 (FluBBa)
 	Converted to GCC/unified asm.
  	Objectified chip.
