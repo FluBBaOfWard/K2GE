@@ -804,7 +804,7 @@ checkFrameIRQ:
 	ldrb r0,[geptr,#kgeIrqEnable]
 	tst r0,#0x80				;@ VBlank IRQ
 	movne r0,#0x0B				;@ 0x0B = VBlank
-	blne TestIntHDMA_External
+	blne setInterrupt
 //	movne lr,pc
 //	ldrne pc,[geptr,#frameIrqFunc]
 	ldmfd sp!,{geptr,lr}
