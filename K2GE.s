@@ -15,7 +15,6 @@
 	.global k2GESaveState
 	.global k2GELoadState
 	.global k2GEGetStateSize
-	.global k2GEConvertTiles
 	.global k2GEDoScanline
 	.global copyScrollValues
 	.global k2GEConvertTileMaps
@@ -758,8 +757,7 @@ k2GEConvertTileMaps:		;@ r0 = destination
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r9,lr}
 
-	mov r4,r0
-	ldr r3,[geptr,#gfxRAMSwap]
+	ldr r1,[geptr,#gfxRAMSwap]	;@ Source
 	ldr r5,=0xFE00FE00
 	ldr r7,=0x20002000
 	ldr r8,=0xC000C000
@@ -767,8 +765,8 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	mov r6,#64
 
 	adr lr,bgRet0
-	ldrb r0,[geptr,#kgeMode]	;@ Color mode
-	tst r0,#0x80
+	ldrb r2,[geptr,#kgeMode]	;@ Color mode
+	tst r2,#0x80
 	beq bgColor
 	bne bgMono
 bgRet0:
@@ -997,51 +995,51 @@ tileLoop16_1p:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-;@bgchrfinish	;@ End of frame...
+;@bgChrFinish	;@ End of frame... r0=destination, r1=source
 ;@----------------------------------------------------------------------------
 ;@	ldr r5,=0xFE00FE00
 ;@	ldr r7,=0x20002000
 ;@	ldr r8,=0xC000C000
 ;@	ldr r9,=0x1E001E00
 ;@ MSB          LSB
-;@ hvcCCCCnnnnnnnnn
+;@ hv_CCCCnnnnnnnnn
 bgColor:
-	ldr r0,[r3],#4				;@ Read from NeoGeo Pocket Tilemap RAM
-	bic r1,r0,r5
-	and r2,r0,r9
-	orr r1,r1,r2,lsl#3			;@ Color
-	and r0,r0,r8				;@ Mask NGP flip bits
-	orr r0,r0,r0,lsr#2
-	and r0,r8,r0,lsl#1
-	orr r1,r1,r0,lsr#4			;@ XY flip
+	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
+	bic r2,r4,r5
+	and r3,r4,r9
+	orr r2,r2,r3,lsl#3			;@ Color
+	and r4,r4,r8				;@ Mask NGP flip bits
+	orr r4,r4,r4,lsr#2
+	and r4,r8,r4,lsl#1
+	orr r2,r2,r4,lsr#4			;@ XY flip
 
-	str r1,[r4],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
-	tst r4,#0x3C				;@ 32 tiles wide
+	str r2,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	tst r0,#0x3C				;@ 32 tiles wide
 	subseq r6,r6,#1
 	bne bgColor
 
 	bx lr
 ;@----------------------------------------------------------------------------
-;@bgchrfinish	;@ End of frame...
+;@bgChrFinish	;@ End of frame... r0=destination, r1=source
 ;@----------------------------------------------------------------------------
 ;@	ldr r5,=0xFE00FE00
 ;@	ldr r7,=0x20002000
 ;@	ldr r8,=0xC000C000
 ;@	ldr r9,=0x1E001E00
 ;@ MSB          LSB
-;@ hvcCCCCnnnnnnnnn
+;@ hvC____nnnnnnnnn
 bgMono:
-	ldr r0,[r3],#4				;@ Read from NeoGeo Pocket Tilemap RAM
-	bic r1,r0,r5
-	and r2,r0,r7
-	orr r1,r1,r2,lsr#1			;@ Color
-	and r0,r0,r8				;@ Mask NGP flip bits
-	orr r0,r0,r0,lsr#2
-	and r0,r8,r0,lsl#1
-	orr r1,r1,r0,lsr#4			;@ XY flip
+	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
+	bic r2,r4,r5
+	and r3,r4,r7
+	orr r2,r2,r3,lsr#1			;@ Color
+	and r4,r4,r8				;@ Mask NGP flip bits
+	orr r4,r4,r4,lsr#2
+	and r4,r8,r4,lsl#1
+	orr r2,r2,r4,lsr#4			;@ XY flip
 
-	str r1,[r4],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
-	tst r4,#0x3C				;@ 32 tiles wide
+	str r2,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	tst r0,#0x3C				;@ 32 tiles wide
 	subseq r6,r6,#1
 	bne bgMono
 
