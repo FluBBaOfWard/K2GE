@@ -7,10 +7,13 @@
 extern "C" {
 #endif
 
-#define HW_K2GE		(0)
-#define HW_K1GE		(1)
-#define NGP_COLOR	HW_K2GE
-#define NGP_MONO	HW_K1GE
+#define HW_AUTO       (0)
+#define HW_NGPMONO    (1)
+#define HW_NGPCOLOR   (2)
+#define HW_SELECT_END (3)
+
+#define SOC_K1GE	(0)
+#define SOC_K2GE	(1)
 
 /** Game screen width in pixels */
 #define GAME_WIDTH  (160)

@@ -97,7 +97,7 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 	str r0,[geptr,#scrollBuff]
 
 	strb r3,[geptr,#kgeModel]
-	cmp r3,#HW_K1GE
+	cmp r3,#SOC_K1GE
 	movne r0,#0x00				;@ Use Color mode.
 	moveq r0,#0x80				;@ Use B&W mode.
 	strb r0,[geptr,#kgeMode]
