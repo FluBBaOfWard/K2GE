@@ -1,3 +1,10 @@
+//
+//  K2GE.s
+//  K2GE
+//
+//  Created by Fredrik Ahlström on 2008-04-02.
+//  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+//
 // SNK K2GE Graphics Engine emulation
 
 #ifdef __arm__
@@ -226,9 +233,9 @@ k2GEBufferWindows:
 ;@----------------------------------------------------------------------------
 k2GE_R:						;@ I/O read (0x8000-0x8FFF)
 ;@----------------------------------------------------------------------------
-	and r2,r0,#0x0F00
-	ldr pc,[pc,r2,lsr#6]
-	.long 0
+	ands r2,r0,#0x0F00
+	ldrne pc,[pc,r2,lsr#6]
+	b k2GERegistersR
 	.long k2GERegistersR		;@ 0x80XX
 	.long k2GEPaletteMonoR		;@ 0x81XX
 	.long k2GEPaletteR			;@ 0x82XX
@@ -247,40 +254,64 @@ k2GE_R:						;@ I/O read (0x8000-0x8FFF)
 	.long k2GEBadR				;@ 0x8FXX
 
 k2GERegistersR:
-	ands r0,r0,#0xFF
-	beq k2GEIrqEnableR
-	cmp r0,#0x02
-	beq k2GEWinHStartR
-	cmp r0,#0x03
-	beq k2GEWinVStartR
-	cmp r0,#0x04
-	beq k2GEWinHSizeR
-	cmp r0,#0x05
-	beq k2GEWinVSizeR
-	cmp r0,#0x06
-	beq k2GERefreshR
-	cmp r0,#0x08
-	beq k2GEHCountR
-	cmp r0,#0x09
-	beq k2GEVCountR
-	cmp r0,#0x10
-	beq k2GEStatusR
-	cmp r0,#0x12
-	beq k2GEBgColR
-	cmp r0,#0x20
-	beq k2GESprOfsXR
-	cmp r0,#0x21
-	beq k2GESprOfsYR
-	cmp r0,#0x30
-	beq k2GEBgPrioR
-	cmp r0,#0x32
-	beq k2GEBgScrXR
-	cmp r0,#0x33
-	beq k2GEBgScrYR
-	cmp r0,#0x34
-	beq k2GEFgScrXR
-	cmp r0,#0x35
-	beq k2GEFgScrYR
+	and r0,r0,#0xFF
+	cmp r0,#0x36
+	ldrmi pc,[pc,r0,lsl#2]
+	b k2GEBadR
+	.long k2GEIrqEnableR		;@ 0x8000
+	.long k2GEBadR				;@ 0x8001
+	.long k2GEWinHStartR		;@ 0x8002
+	.long k2GEWinVStartR		;@ 0x8003
+	.long k2GEWinHSizeR			;@ 0x8004
+	.long k2GEWinVSizeR			;@ 0x8005
+	.long k2GERefreshR			;@ 0x8006
+	.long k2GEBadR				;@ 0x8007
+	.long k2GEHCountR			;@ 0x8008
+	.long k2GEVCountR			;@ 0x8009
+	.long k2GEBadR				;@ 0x800A
+	.long k2GEBadR				;@ 0x800B
+	.long k2GEBadR				;@ 0x800C
+	.long k2GEBadR				;@ 0x800D
+	.long k2GEBadR				;@ 0x800E
+	.long k2GEBadR				;@ 0x800F
+	.long k2GEStatusR			;@ 0x8010
+	.long k2GEBadR				;@ 0x8011
+	.long k2GEBgColR			;@ 0x8012
+	.long k2GEBadR				;@ 0x8013
+	.long k2GEBadR				;@ 0x8014
+	.long k2GEBadR				;@ 0x8015
+	.long k2GEBadR				;@ 0x8016
+	.long k2GEBadR				;@ 0x8017
+	.long k2GEBadR				;@ 0x8018
+	.long k2GEBadR				;@ 0x8019
+	.long k2GEBadR				;@ 0x801A
+	.long k2GEBadR				;@ 0x801B
+	.long k2GEBadR				;@ 0x801C
+	.long k2GEBadR				;@ 0x801D
+	.long k2GEBadR				;@ 0x801E
+	.long k2GEBadR				;@ 0x801F
+	.long k2GESprOfsXR			;@ 0x8020
+	.long k2GESprOfsYR			;@ 0x8021
+	.long k2GEBadR				;@ 0x8022
+	.long k2GEBadR				;@ 0x8023
+	.long k2GEBadR				;@ 0x8024
+	.long k2GEBadR				;@ 0x8025
+	.long k2GEBadR				;@ 0x8026
+	.long k2GEBadR				;@ 0x8027
+	.long k2GEBadR				;@ 0x8028
+	.long k2GEBadR				;@ 0x8029
+	.long k2GEBadR				;@ 0x802A
+	.long k2GEBadR				;@ 0x802B
+	.long k2GEBadR				;@ 0x802C
+	.long k2GEBadR				;@ 0x802D
+	.long k2GEBadR				;@ 0x802E
+	.long k2GEBadR				;@ 0x802F
+	.long k2GEBgPrioR			;@ 0x8030
+	.long k2GEBadR				;@ 0x8031
+	.long k2GEBgScrXR			;@ 0x8032
+	.long k2GEBgScrYR			;@ 0x8033
+	.long k2GEFgScrXR			;@ 0x8034
+	.long k2GEFgScrYR			;@ 0x8035
 k2GEBadR:
 	mov r11,r11					;@ No$GBA breakpoint
 	ldr r0,=0x826EBAD0
@@ -474,13 +505,12 @@ GetHInt:					;@ Out r0 = 0 / 1, if HInt is happening or not.
 	bx lr
 
 
-
 ;@----------------------------------------------------------------------------
 k2GE_W:						;@ I/O write (0x8000-0x8FFF)
 ;@----------------------------------------------------------------------------
-	and r2,r1,#0x0F00
-	ldr pc,[pc,r2,lsr#6]
-	.long 0
+	ands r2,r1,#0x0F00
+	ldrne pc,[pc,r2,lsr#6]
+	b k2GERegistersW
 	.long k2GERegistersW		;@ 0x80XX
 	.long k2GEPaletteMonoW		;@ 0x81XX
 k2GEPalPtr:
@@ -501,34 +531,64 @@ k2GEExtraPtr:
 	.long k2GEBadW				;@ 0x8FXX
 
 k2GERegistersW:
-	ands r1,r1,#0xFF
-	beq k2GEIrqEnableW
-	cmp r1,#0x02
-	beq k2GEWinHStartW
-	cmp r1,#0x03
-	beq k2GEWinVStartW
-	cmp r1,#0x04
-	beq k2GEWinHSizeW
-	cmp r1,#0x05
-	beq k2GEWinVSizeW
-	cmp r1,#0x06
-	beq k2GERefW
-	cmp r1,#0x12
-	beq k2GEBgColW
-	cmp r1,#0x20
-	beq k2GESprOfsXW
-	cmp r1,#0x21
-	beq k2GESprOfsYW
-	cmp r1,#0x30
-	beq k2GEBgPrioW
-	cmp r1,#0x32
-	beq k2GEBgScrXW
-	cmp r1,#0x33
-	beq k2GEBgScrYW
-	cmp r1,#0x34
-	beq k2GEFgScrXW
-	cmp r1,#0x35
-	beq k2GEFgScrYW
+	and r1,r1,#0xFF
+	cmp r1,#0x36
+	ldrmi pc,[pc,r1,lsl#2]
+	b k2GEBadW
+	.long k2GEIrqEnableW		;@ 0x8000
+	.long k2GEBadW				;@ 0x8001
+	.long k2GEWinHStartW		;@ 0x8002
+	.long k2GEWinVStartW		;@ 0x8003
+	.long k2GEWinHSizeW			;@ 0x8004
+	.long k2GEWinVSizeW			;@ 0x8005
+	.long k2GERefW				;@ 0x8006
+	.long k2GEBadW				;@ 0x8007
+	.long k2GEBadW				;@ 0x8008
+	.long k2GEBadW				;@ 0x8009
+	.long k2GEBadW				;@ 0x800A
+	.long k2GEBadW				;@ 0x800B
+	.long k2GEBadW				;@ 0x800C
+	.long k2GEBadW				;@ 0x800D
+	.long k2GEBadW				;@ 0x800E
+	.long k2GEBadW				;@ 0x800F
+	.long k2GEBadW				;@ 0x8010
+	.long k2GEBadW				;@ 0x8011
+	.long k2GEBgColW			;@ 0x8012
+	.long k2GEBadW				;@ 0x8013
+	.long k2GEBadW				;@ 0x8014
+	.long k2GEBadW				;@ 0x8015
+	.long k2GEBadW				;@ 0x8016
+	.long k2GEBadW				;@ 0x8017
+	.long k2GEBadW				;@ 0x8018
+	.long k2GEBadW				;@ 0x8019
+	.long k2GEBadW				;@ 0x801A
+	.long k2GEBadW				;@ 0x801B
+	.long k2GEBadW				;@ 0x801C
+	.long k2GEBadW				;@ 0x801D
+	.long k2GEBadW				;@ 0x801E
+	.long k2GEBadW				;@ 0x801F
+	.long k2GESprOfsXW			;@ 0x8020
+	.long k2GESprOfsYW			;@ 0x8021
+	.long k2GEBadW				;@ 0x8022
+	.long k2GEBadW				;@ 0x8023
+	.long k2GEBadW				;@ 0x8024
+	.long k2GEBadW				;@ 0x8025
+	.long k2GEBadW				;@ 0x8026
+	.long k2GEBadW				;@ 0x8027
+	.long k2GEBadW				;@ 0x8028
+	.long k2GEBadW				;@ 0x8029
+	.long k2GEBadW				;@ 0x802A
+	.long k2GEBadW				;@ 0x802B
+	.long k2GEBadW				;@ 0x802C
+	.long k2GEBadW				;@ 0x802D
+	.long k2GEBadW				;@ 0x802E
+	.long k2GEBadW				;@ 0x802F
+	.long k2GEBgPrioW			;@ 0x8030
+	.long k2GEBadW				;@ 0x8031
+	.long k2GEBgScrXW			;@ 0x8032
+	.long k2GEBgScrYW			;@ 0x8033
+	.long k2GEFgScrXW			;@ 0x8034
+	.long k2GEFgScrYW			;@ 0x8035
 k2GEBadW:
 								;@ Cool Boarders writes 0x80 to 0x8011 and 0x00 to 8036.
 	mov r11,r11					;@ No$GBA breakpoint

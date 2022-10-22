@@ -1,5 +1,12 @@
-;@ ASM header for the SNK K1GE/K2GE Graphics Engine emulator
-;@
+//
+//  K2GE.i
+//  K2GE
+//
+//  Created by Fredrik Ahlström on 2008-04-02.
+//  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+//
+// ASM header for the SNK K1GE/K2GE Graphics Engine emulator
+//
 
 #define HW_AUTO       (0)
 #define HW_NGPMONO    (1)

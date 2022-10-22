@@ -1,3 +1,10 @@
+//
+//  K2GE.h
+//  K2GE
+//
+//  Created by Fredrik Ahlström on 2008-04-02.
+//  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+//
 // SNK K1GE/K2GE Graphics Engine emulation
 
 #ifndef K2GE_HEADER
