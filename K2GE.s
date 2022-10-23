@@ -254,9 +254,9 @@ k2GE_R:						;@ I/O read (0x8000-0x8FFF)
 	.long k2GEBadR				;@ 0x8FXX
 
 k2GERegistersR:
-	and r0,r0,#0xFF
-	cmp r0,#0x36
-	ldrmi pc,[pc,r0,lsl#2]
+	and r2,r0,#0xFF
+	cmp r2,#0x36
+	ldrmi pc,[pc,r2,lsl#2]
 	b k2GEBadR
 	.long k2GEIrqEnableR		;@ 0x8000
 	.long k2GEBadR				;@ 0x8001
@@ -314,7 +314,10 @@ k2GERegistersR:
 	.long k2GEFgScrYR			;@ 0x8035
 k2GEBadR:
 	mov r11,r11					;@ No$GBA breakpoint
-	ldr r0,=0x826EBAD0
+	ldr r1,=0x826EBAD0
+	stmfd sp!,{lr}
+	bl debugIOUnimplR
+	ldmfd sp!,{lr}
 	mov r0,#0
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -531,9 +534,9 @@ k2GEExtraPtr:
 	.long k2GEBadW				;@ 0x8FXX
 
 k2GERegistersW:
-	and r1,r1,#0xFF
-	cmp r1,#0x36
-	ldrmi pc,[pc,r1,lsl#2]
+	and r2,r1,#0xFF
+	cmp r2,#0x36
+	ldrmi pc,[pc,r2,lsl#2]
 	b k2GEBadW
 	.long k2GEIrqEnableW		;@ 0x8000
 	.long k2GEBadW				;@ 0x8001
@@ -590,10 +593,10 @@ k2GERegistersW:
 	.long k2GEFgScrXW			;@ 0x8034
 	.long k2GEFgScrYW			;@ 0x8035
 k2GEBadW:
-								;@ Cool Boarders writes 0x80 to 0x8011 and 0x00 to 8036.
+								;@ Cool Boarders writes 0x80 to 0x8011 and lots of values to 8036.
 	mov r11,r11					;@ No$GBA breakpoint
-	ldr r0,=0x826EBAD1
-	bx lr
+	ldr r2,=0x826EBAD1
+	b debugIOUnimplW
 ;@----------------------------------------------------------------------------
 k2GEIrqEnableW:				;@ 0x8000
 ;@----------------------------------------------------------------------------
