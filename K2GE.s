@@ -353,7 +353,11 @@ k2GERefreshR:				;@ 0x8006
 ;@----------------------------------------------------------------------------
 k2GEHCountR:				;@ 0x8008
 ;@----------------------------------------------------------------------------
-	mov r0,t9cycles,lsr#T9CYC_SHIFT+2	;@
+	ldrb r1,[t9optbl,#tlcsCycShift]
+	mov r0,t9cycles,lsr r1
+	ldr r1,=T9_HINT_RATE		;@ 515
+	sub r0,r0,r1
+	mov r0,r0,lsr#2				;@
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GEVCountR:				;@ 0x8009
@@ -431,9 +435,7 @@ k2GELedR:					;@ 0x84XX
 	beq k2GELedEnableR
 	cmp r1,#0x02
 	beq k2GELedBlinkR
-	mov r11,r11
-	mov r0,#0
-	bx lr
+	b k2GEBadR
 ;@----------------------------------------------------------------------------
 k2GELedEnableR:				;@ 0x8400
 ;@----------------------------------------------------------------------------
@@ -456,9 +458,7 @@ k2GEExtraR:					;@ 0x87XX
 	beq k2GEModeChangeR
 	cmp r1,#0xFE
 	beq k2GEInputPortR
-	mov r11,r11
-	mov r0,#0
-	bx lr
+	b k2GEBadR
 ;@----------------------------------------------------------------------------
 k2GEResetR:					;@ 0x87E0
 ;@----------------------------------------------------------------------------
@@ -699,9 +699,9 @@ scrollCnt:
 	add r1,r1,#1
 	cmp r1,#159
 	movhi r1,#159
-	ldr r0,scrollLine
+	ldr r0,[geptr,#scrollLine]
 	subs r0,r1,r0
-	strhi r1,scrollLine
+	strhi r1,[geptr,#scrollLine]
 
 	stmfd sp!,{r3}
 	ldr r3,[geptr,#scrollBuff]
@@ -712,8 +712,6 @@ sy2:
 	subs r0,r0,#1
 	bhi sy2
 	bx lr
-
-scrollLine: .long 0 ;@ ..was when?
 
 ;@----------------------------------------------------------------------------
 k2GEPaletteMonoW:			;@ 0x8100-0x8118
@@ -738,8 +736,7 @@ k2GELedW:					;@ 0x84XX
 	beq k2GELedEnableW
 	cmp r1,#0x02
 	beq k2GELedBlinkW
-	mov r11,r11
-	bx lr
+	b k2GEBadW
 ;@----------------------------------------------------------------------------
 k2GELedEnableW:				;@ 0x8400
 ;@----------------------------------------------------------------------------
@@ -758,8 +755,7 @@ k1GEExtraW:					;@ 0x87XX
 	ands r1,r1,#0xFF
 	cmp r1,#0xE0
 	beq k2GEResetW
-	mov r11,r11
-	bx lr
+	b k2GEBadW
 ;@----------------------------------------------------------------------------
 k2GEExtraW:					;@ 0x87XX
 ;@----------------------------------------------------------------------------
@@ -770,8 +766,7 @@ k2GEExtraW:					;@ 0x87XX
 	beq k2GEModeW
 	cmp r1,#0xF0
 	beq k2GEModeChangeW
-	mov r11,r11
-	bx lr
+	b k2GEBadW
 ;@----------------------------------------------------------------------------
 k2GEResetW:					;@ 0x87E0
 ;@----------------------------------------------------------------------------
@@ -820,16 +815,17 @@ k2GEConvertTileMaps:		;@ r0 = destination
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r9,lr}
 
+
 	ldr r1,[geptr,#gfxRAMSwap]	;@ Source
-	ldr r5,=0xFE00FE00
-	ldr r7,=0x20002000
-	ldr r8,=0xC000C000
+	ldr r6,=0xFE00FE00
+	ldr r7,=0xC000C000
+	ldr r8,=0x20002000
 	ldr r9,=0x1E001E00
-	mov r6,#64
+	mov r2,#64					;@ Row count
 
 	adr lr,bgRet0
-	ldrb r2,[geptr,#kgeMode]	;@ Color mode
-	tst r2,#0x80
+	ldrb r3,[geptr,#kgeMode]	;@ Color mode
+	tst r3,#0x80
 	beq bgColor
 	bne bgMono
 bgRet0:
@@ -890,7 +886,7 @@ noLedBlink:
 	strb r0,[geptr,#kgeLedOnOff]
 
 	mov r0,#0
-	str r0,scrollLine
+	str r0,[geptr,#scrollLine]
 
 	ldr r2,=lineStateTable
 	ldr r1,[r2],#4
@@ -941,7 +937,7 @@ checkScanlineIRQ:
 //	cmp r0,#152
 	mov r0,#1
 	bx lr
-	
+
 //	stmfd sp!,{lr}
 //	ldrb r0,[geptr,#kgeIrqEnable]
 //	ands r0,r0,#0x40			;@ HIRQ enabled?
@@ -980,17 +976,17 @@ tileLoop16_2p:
 	and r3,r3,r4
 	str r3,[r6],#4
 	tst r4,#0x000000FF
-	addne r2,r2,#0x10
 	bleq tileLoop16_3p
+	add r2,r2,#0x10
 	tst r4,#0x0000FF00
-	addne r2,r2,#0x10
 	bleq tileLoop16_3p
+	add r2,r2,#0x10
 	tst r4,#0x00FF0000
-	addne r2,r2,#0x10
 	bleq tileLoop16_3p
+	add r2,r2,#0x10
 	tst r4,#0xFF000000
-	addne r2,r2,#0x10
 	bleq tileLoop16_3p
+	add r2,r2,#0x10
 	cmp r2,#0x3000
 	bne tileLoop16_2p
 
@@ -1001,8 +997,6 @@ tileLoop16_3p:
 	ldmia r3,{r8-r11}
 	add r3,r0,r2
 	stmia r3,{r8-r11}
-	add r2,r2,#16
-
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -1058,52 +1052,52 @@ tileLoop16_1p:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-;@bgChrFinish	;@ End of frame... r0=destination, r1=source
+;@bgChrFinish				;@ r0=destination, r1=source, r2=rowCount
 ;@----------------------------------------------------------------------------
-;@	ldr r5,=0xFE00FE00
-;@	ldr r7,=0x20002000
-;@	ldr r8,=0xC000C000
+;@	ldr r6,=0xFE00FE00
+;@	ldr r7,=0xC000C000
+;@	ldr r8,=0x20002000
 ;@	ldr r9,=0x1E001E00
 ;@ MSB          LSB
 ;@ hv_CCCCnnnnnnnnn
 bgColor:
 	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
-	bic r2,r4,r5
-	and r3,r4,r9
-	orr r2,r2,r3,lsl#3			;@ Color
-	and r4,r4,r8				;@ Mask NGP flip bits
+	bic r3,r4,r6
+	and r5,r4,r9
+	orr r3,r3,r5,lsl#3			;@ Color
+	and r4,r4,r7				;@ Mask NGP flip bits
 	orr r4,r4,r4,lsr#2
-	and r4,r8,r4,lsl#1
-	orr r2,r2,r4,lsr#4			;@ XY flip
+	and r4,r7,r4,lsl#1
+	orr r3,r3,r4,lsr#4			;@ XY flip
 
-	str r2,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
 	tst r0,#0x3C				;@ 32 tiles wide
-	subseq r6,r6,#1
+	subseq r2,r2,#1
 	bne bgColor
 
 	bx lr
 ;@----------------------------------------------------------------------------
-;@bgChrFinish	;@ End of frame... r0=destination, r1=source
+;@bgChrFinish				;@ r0=destination, r1=source, r2=rowCount
 ;@----------------------------------------------------------------------------
-;@	ldr r5,=0xFE00FE00
-;@	ldr r7,=0x20002000
-;@	ldr r8,=0xC000C000
+;@	ldr r6,=0xFE00FE00
+;@	ldr r7,=0xC000C000
+;@	ldr r8,=0x20002000
 ;@	ldr r9,=0x1E001E00
 ;@ MSB          LSB
 ;@ hvC____nnnnnnnnn
 bgMono:
 	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
-	bic r2,r4,r5
-	and r3,r4,r7
-	orr r2,r2,r3,lsr#1			;@ Color
-	and r4,r4,r8				;@ Mask NGP flip bits
+	bic r3,r4,r6
+	and r5,r4,r8
+	orr r3,r3,r5,lsr#1			;@ Color
+	and r4,r4,r7				;@ Mask NGP flip bits
 	orr r4,r4,r4,lsr#2
-	and r4,r8,r4,lsl#1
-	orr r2,r2,r4,lsr#4			;@ XY flip
+	and r4,r7,r4,lsl#1
+	orr r3,r3,r4,lsr#4			;@ XY flip
 
-	str r2,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
 	tst r0,#0x3C				;@ 32 tiles wide
-	subseq r6,r6,#1
+	subseq r2,r2,#1
 	bne bgMono
 
 	bx lr

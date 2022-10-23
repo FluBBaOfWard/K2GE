@@ -54,6 +54,8 @@ kgeLedOnOff:	.byte 0		;@ Bit 0, Led On/Off.
 kgeModel:		.byte 0		;@ SOC_K2GE / SOC_K1GE.
 //kgePadding1:	.space 1
 
+scrollLine: 	.long 0 	;@ Last write to scroll registers was when?
+
 ledCounter:		.long 0
 windowData:		.long 0
 k2GEStateSize:
