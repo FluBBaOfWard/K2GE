@@ -130,9 +130,15 @@ k2GERegistersReset:
 	strb r0,[geptr,#kgeIrqEnable]	;@ Both interrupts allowed
 	mov r0,#0xC6
 	strb r0,[geptr,#kgeRef]			;@ Refresh Rate value
-	mov r0,#0xFF
-	strb r0,[geptr,#kgeWinXSize]	;@ Window size
-	strb r0,[geptr,#kgeWinYSize]
+	mov r0,#0
+	strb r0,[geptr,#kgeBGCol]
+	strh r0,[geptr,#kgeSprXOfs]
+	strb r0,[geptr,#kgeBGPrio]
+	str r0,[geptr,#kgeBGXScroll]
+	str r0,[geptr,#kgeFGXScroll]
+	strh r0,[geptr,#kgeWinXPos]		;@ Window pos
+	mov r0,#0xFFFFFFFF
+	strh r0,[geptr,#kgeWinXSize]	;@ Window size
 	mov r0,#0x80
 	strb r0,[geptr,#kgeLedBlink]	;@ Flash cycle = 1.3s
 	ldr r1,[geptr,#paletteMonoRAM]
@@ -354,15 +360,12 @@ k2GERefreshR:				;@ 0x8006
 k2GEHCountR:				;@ 0x8008
 ;@----------------------------------------------------------------------------
 	ldrb r1,[t9optbl,#tlcsCycShift]
-	mov r0,t9cycles,lsr r1
-	ldr r1,=T9_HINT_RATE		;@ 515
-	sub r0,r0,r1
+	mov r0,t9cycles,lsr r1		;@ The value decreases along the scanline
 	mov r0,r0,lsr#2				;@
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GEVCountR:				;@ 0x8009
 ;@----------------------------------------------------------------------------
-;@	mov t9cycles,#0				;@
 	ldrb r0,[geptr,#scanline]
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -370,7 +373,7 @@ k2GEStatusR:				;@ 0x8010
 ;@----------------------------------------------------------------------------
 	ldr r0,[geptr,#scanline]
 	cmp r0,#152					;@ Should this be WIN_VStart + WIN_VSize?
-	movpl r0,#0x40				;@ in VBlank
+	movpl r0,#0x40				;@ bit 6 = in VBlank, bit 7 = character over
 	movmi r0,#0
 	bx lr
 ;@----------------------------------------------------------------------------
