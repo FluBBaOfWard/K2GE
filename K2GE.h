@@ -61,7 +61,7 @@ typedef struct {
 	u32 ledCounter;
 	u32 windowData;
 
-	void *periodicIrqFunc;
+	void *hblankIrqFunc;
 	void *frameIrqFunc;
 
 	u8 dirtyTiles[4];

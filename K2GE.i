@@ -61,7 +61,7 @@ windowData:		.long 0
 k2GEStateSize:
 
 frameIrqFunc:	.long 0		;@ V-Blank Irq
-periodicIrqFunc:.long 0		;@ H-Blank Irq
+hblankIrqFunc:	.long 0		;@ H-Blank Irq
 
 dirtyTiles:		.space 4
 gfxRAM:			.long 0		;@ 0x3000

@@ -30,7 +30,6 @@
 	.global k2GEBufferWindows
 	.global k2GE_R
 	.global k2GE_W
-	.global GetHInt
 
 
 	.syntax unified
@@ -89,7 +88,7 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 	cmp r1,#0
 	adreq r1,dummyIrqFunc
 	str r0,[geptr,#frameIrqFunc]
-	str r1,[geptr,#periodicIrqFunc]
+	str r1,[geptr,#hblankIrqFunc]
 
 	str r2,[geptr,#gfxRAM]
 	add r2,r2,#0x3000
@@ -151,7 +150,7 @@ k2GERegistersReset:
 
 	bx lr
 ;@----------------------------------------------------------------------------
-k2GESaveState:		;@ In r0=destination, r1=geptr. Out r0=state size.
+k2GESaveState:				;@ In r0=destination, r1=geptr. Out r0=state size.
 	.type   k2GESaveState STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4,r5,lr}
@@ -172,7 +171,7 @@ k2GESaveState:		;@ In r0=destination, r1=geptr. Out r0=state size.
 	ldr r0,=0x3360+(k2GEStateSize-k2GEState)
 	bx lr
 ;@----------------------------------------------------------------------------
-k2GELoadState:		;@ In r0=geptr, r1=source. Out r0=state size.
+k2GELoadState:				;@ In r0=geptr, r1=source. Out r0=state size.
 	.type   k2GELoadState STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4,r5,lr}
@@ -496,20 +495,6 @@ k2GESpriteR:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
 	tstne r1,#0xC0000000
 	ldrbeq r0,[r2,r1,lsr#24]
 	bx lr
-;@----------------------------------------------------------------------------
-GetHInt:					;@ Out r0 = 0 / 1, if HInt is happening or not.
-;@----------------------------------------------------------------------------
-
-	mov r0,#0
-	ldr r1,[geptr,#scanline]
-	cmp r1,#151					;@ Should this be WIN_VStart + WIN_VSize?
-	movmi r0,#1
-	cmp r1,#198
-	moveq r0,#1
-	ldrb r1,[geptr,#kgeIrqEnable]
-	and r0,r0,r1,lsr#6
-	bx lr
-
 
 ;@----------------------------------------------------------------------------
 k2GE_W:						;@ I/O write (0x8000-0x8FFF)
@@ -863,10 +848,8 @@ checkFrameIRQ:
 
 	ldrb r0,[geptr,#kgeIrqEnable]
 	tst r0,#0x80				;@ VBlank IRQ
-	movne r0,#0x0B				;@ 0x0B = VBlank
-	blne setInterrupt
-//	movne lr,pc
-//	ldrne pc,[geptr,#frameIrqFunc]
+	movne lr,pc
+	ldrne pc,[geptr,#frameIrqFunc]
 	ldmfd sp!,{geptr,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
@@ -910,7 +893,7 @@ lineStateTable:
 	.long 75, midFrame			;@ Middle of screen
 	.long 151, endFrame			;@ Last visible scanline
 	.long 152, checkFrameIRQ	;@ frameIRQ
-	.long 198, frameEndHook		;@ totalScanlines (from 0x8006)
+	.long 199, frameEndHook		;@ totalScanlines (from 0x8006)
 ;@----------------------------------------------------------------------------
 #ifdef GBA
 	.section .iwram, "ax", %progbits	;@ For the GBA
@@ -937,18 +920,18 @@ k2GEDoScanline:
 ;@----------------------------------------------------------------------------
 checkScanlineIRQ:
 ;@----------------------------------------------------------------------------
-//	cmp r0,#152
+	cmp r0,#152
+	movhi r0,#1
+	bxhi lr
+
+	ldrb r1,[geptr,#kgeIrqEnable]
+	ands r1,r1,#0x40			;@ HIRQ enabled?
+	stmfd sp!,{lr}
+	movne lr,pc
+	ldrne pc,[geptr,#hblankIrqFunc]
+
 	mov r0,#1
-	bx lr
-
-//	stmfd sp!,{lr}
-//	ldrb r0,[geptr,#kgeIrqEnable]
-//	ands r0,r0,#0x40			;@ HIRQ enabled?
-//	movne lr,pc
-//	ldrne pc,[geptr,#periodicIrqFunc]
-
-//	mov r0,#1
-//	ldmfd sp!,{pc}
+	ldmfd sp!,{pc}
 
 ;@----------------------------------------------------------------------------
 tData:

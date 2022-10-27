@@ -2,8 +2,10 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.5.2 - 2022-10-23 (FluBBa)
+V0.5.2 - 2022-10-27 (FluBBa)
 	Optimized register access.
+	Fixed reset of registers.
+	Tweaked VBLank & HBlank interrupt handling.
 	Added debugging of unhandled register access.
 
 V0.5.1 - 2022-09-25 (FluBBa)
