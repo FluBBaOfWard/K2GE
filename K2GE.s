@@ -684,7 +684,6 @@ k2GEFgScrYW:				;@ 0x8035, Foreground Vertical Scroll register
 scrollCnt:
 
 	ldr r1,[geptr,#scanline]	;@ r1=scanline
-	add r1,r1,#1
 	cmp r1,#159
 	movhi r1,#159
 	ldr r0,[geptr,#scrollLine]
@@ -696,9 +695,9 @@ scrollCnt:
 	add r1,r3,r1,lsl#3
 	ldmfd sp!,{r3}
 sy2:
-	stmdbhi r1!,{r2,r3}			;@ Fill backwards from scanline to lastline
+	stmdbpl r1!,{r2,r3}			;@ Fill backwards from scanline to lastline
 	subs r0,r0,#1
-	bhi sy2
+	bpl sy2
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -1183,6 +1182,7 @@ skipSprite:
 #endif
 CHR_DECODE:
 	.space 0x200
+	.space 8
 SCROLL_BUFF:
 	.space 160*8
 
