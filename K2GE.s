@@ -3,7 +3,7 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2023 Fredrik Ahlström. All rights reserved.
 //
 // SNK K2GE Graphics Engine emulation
 
@@ -358,7 +358,7 @@ k2GERefreshR:				;@ 0x8006
 ;@----------------------------------------------------------------------------
 k2GEHCountR:				;@ 0x8008
 ;@----------------------------------------------------------------------------
-	ldrb r1,[t9optbl,#tlcsCycShift]
+	ldrb r1,[t9ptr,#tlcsCycShift]
 	mov r0,t9cycles,lsr r1		;@ The value decreases along the scanline
 	mov r0,r0,lsr#2				;@
 	bx lr
@@ -638,49 +638,23 @@ k2GEBgPrioW:				;@ 0x8030
 ;@----------------------------------------------------------------------------
 k2GEBgScrXW:				;@ 0x8032, Background Horizontal Scroll register
 ;@----------------------------------------------------------------------------
-#ifdef NDS
-	ldrd r2,r3,[geptr,#kgeBGXScroll]
-#else
-	ldr r2,[geptr,#kgeBGXScroll]
-	ldr r3,[geptr,#kgeFGXScroll]
-#endif
-	strb r0,[geptr,#kgeBGXScroll]
-	b scrollCnt
-
 ;@----------------------------------------------------------------------------
 k2GEBgScrYW:				;@ 0x8033, Background Vertical Scroll register
 ;@----------------------------------------------------------------------------
-#ifdef NDS
-	ldrd r2,r3,[geptr,#kgeBGXScroll]
-#else
-	ldr r2,[geptr,#kgeBGXScroll]
-	ldr r3,[geptr,#kgeFGXScroll]
-#endif
-	strb r0,[geptr,#kgeBGYScroll]
-	b scrollCnt
-
 ;@----------------------------------------------------------------------------
 k2GEFgScrXW:				;@ 0x8034, Foreground Horizontal Scroll register
 ;@----------------------------------------------------------------------------
-#ifdef NDS
-	ldrd r2,r3,[geptr,#kgeBGXScroll]
-#else
-	ldr r2,[geptr,#kgeBGXScroll]
-	ldr r3,[geptr,#kgeFGXScroll]
-#endif
-	strb r0,[geptr,#kgeFGXScroll]
-	b scrollCnt
-
 ;@----------------------------------------------------------------------------
 k2GEFgScrYW:				;@ 0x8035, Foreground Vertical Scroll register
 ;@----------------------------------------------------------------------------
+	add r1,r2,#(kgeBGXScroll/2) - 0x32
 #ifdef NDS
 	ldrd r2,r3,[geptr,#kgeBGXScroll]
 #else
 	ldr r2,[geptr,#kgeBGXScroll]
 	ldr r3,[geptr,#kgeFGXScroll]
 #endif
-	strb r0,[geptr,#kgeFGYScroll]
+	strb r0,[geptr,r1,lsl#1]
 scrollCnt:
 
 	ldr r1,[geptr,#scanline]	;@ r1=scanline
@@ -838,10 +812,9 @@ endFrame:
 checkFrameIRQ:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{geptr,lr}
+	mov r2,#0x32
 	ldrb r0,[geptr,#kgeBGXScroll]
 	bl k2GEBgScrXW
-	ldrb r0,[geptr,#kgeFGXScroll]
-	bl k2GEFgScrXW
 	ldmfd sp!,{lr}
 	bl endFrameGfx
 

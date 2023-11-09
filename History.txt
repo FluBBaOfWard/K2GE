@@ -2,6 +2,9 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
+V0.5.3 - 2023-11-09 (FluBBa)
+	Optimized scroll register writes.
+
 V0.5.2 - 2022-10-27 (FluBBa)
 	Optimized register access.
 	Fixed reset of registers.
