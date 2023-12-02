@@ -1105,8 +1105,6 @@ k2GEConvertSprites:			;@ in r0 = destination.
 	mov r8,#64					;@ Number of sprites
 dm5:
 	ldr r0,[r10],#4				;@ NGP OBJ, r4=Tile,Attrib,Xpos,Ypos.
-	ands r6,r0,#0x1800			;@ Prio
-	beq skipSprite
 	movs r2,r0,lsl#22			;@ 0x400=X-Chain, 0x200=Y-Chain
 	addcs r1,r0,r4,lsr#8		;@ X-Chain
 	addcc r1,r0,r5,lsr#8		;@ X-Offset
@@ -1116,6 +1114,8 @@ dm5:
 	and r4,r3,#0xFF				;@ Save Y-pos
 	orr r3,r4,r1				;@ Xpos
 	orr r4,r4,r1,lsl#8			;@ Save X-pos
+	ands r6,r0,#0x1800			;@ Prio
+	beq skipSprite
 	movs r2,r0,lsl#17			;@ Test H- & V-flip
 	orrcs r3,r3,#0x10000000		;@ H-flip
 	orrmi r3,r3,#0x20000000		;@ V-flip
