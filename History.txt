@@ -2,9 +2,10 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.5.3 - 2023-12-02 (FluBBa)
-	Optimized scroll register writes.
+V0.5.3 - 2023-12-03 (FluBBa)
 	Fixed sprite chain handling.
+	Optimized scroll register writes.
+	Optimized tilemap rendering.
 
 V0.5.2 - 2022-10-27 (FluBBa)
 	Optimized register access.

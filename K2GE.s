@@ -774,7 +774,7 @@ k2GESpriteW:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
 ;@----------------------------------------------------------------------------
 k2GEConvertTileMaps:		;@ r0 = destination
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r9,lr}
+	stmfd sp!,{r4-r11,lr}
 
 
 	ldr r1,[geptr,#gfxRAMSwap]	;@ Source
@@ -782,6 +782,8 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	ldr r7,=0xC000C000
 	ldr r8,=0x20002000
 	ldr r9,=0x1E001E00
+	ldr r10,=0x44444444
+	ldr r11,=DIRTYTILES2
 	mov r2,#64					;@ Row count
 
 	adr lr,bgRet0
@@ -791,7 +793,7 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	bne bgMono
 bgRet0:
 noChange:
-	ldmfd sp!,{r4-r9,pc}
+	ldmfd sp!,{r4-r11,pc}
 
 ;@----------------------------------------------------------------------------
 midFrame:
@@ -909,7 +911,7 @@ checkScanlineIRQ:
 tData:
 	.long DIRTYTILES
 cData:
-	.long DIRTYTILES2+0x100
+	.long DIRTYTILES2+0x100		;@ Skip tilemap
 	.long CHR_DECODE
 	.long BG_GFX+0x08000		;@ BGR tiles
 	.long BG_GFX+0x0C000		;@ BGR tiles2
@@ -1012,13 +1014,27 @@ tileLoop16_1p:
 ;@----------------------------------------------------------------------------
 ;@bgChrFinish				;@ r0=destination, r1=source, r2=rowCount
 ;@----------------------------------------------------------------------------
-;@	ldr r6,=0xFE00FE00
-;@	ldr r7,=0xC000C000
-;@	ldr r8,=0x20002000
-;@	ldr r9,=0x1E001E00
+;@	r6=0xFE00FE00
+;@	r7=0xC000C000
+;@	r8=0x20002000
+;@	r9=0x1E001E00
+;@ r10=0x44444444
+;@ r11=DIRTYTILES
 ;@ MSB          LSB
 ;@ hv_CCCCnnnnnnnnn
 bgColor:
+	ldr r3,[r11],#4			;@ Dirtytiles
+	and r3,r3,r3,lsr#16
+	ands r3,r3,r3,lsr#8
+	beq bgColorRow
+	add r1,r1,#0x40
+	add r0,r0,#0x40
+	subs r2,r2,#1
+	bne bgColor
+	bx lr
+bgColorRow:
+	str r10,[r11,#-4]			;@ Dirtytiles
+bgColorLoop:
 	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
 	bic r3,r4,r6
 	and r5,r4,r9
@@ -1030,20 +1046,35 @@ bgColor:
 
 	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
 	tst r0,#0x3C				;@ 32 tiles wide
-	subseq r2,r2,#1
+	bne bgColorLoop
+	subs r2,r2,#1
 	bne bgColor
 
 	bx lr
 ;@----------------------------------------------------------------------------
 ;@bgChrFinish				;@ r0=destination, r1=source, r2=rowCount
 ;@----------------------------------------------------------------------------
-;@	ldr r6,=0xFE00FE00
-;@	ldr r7,=0xC000C000
-;@	ldr r8,=0x20002000
-;@	ldr r9,=0x1E001E00
+;@	r6=0xFE00FE00
+;@	r7=0xC000C000
+;@	r8=0x20002000
+;@	r9=0x1E001E00
+;@ r10=0x44444444
+;@ r11=DIRTYTILES
 ;@ MSB          LSB
 ;@ hvC____nnnnnnnnn
 bgMono:
+	ldr r3,[r11],#4			;@ Dirtytiles
+	and r3,r3,r3,lsr#16
+	ands r3,r3,r3,lsr#8
+	beq bgMonoRow
+	add r1,r1,#0x40
+	add r0,r0,#0x40
+	subs r2,r2,#1
+	bne bgMono
+	bx lr
+bgMonoRow:
+	str r10,[r11,#-4]			;@ Dirtytiles
+bgMonoLoop:
 	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
 	bic r3,r4,r6
 	and r5,r4,r8
@@ -1055,7 +1086,8 @@ bgMono:
 
 	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
 	tst r0,#0x3C				;@ 32 tiles wide
-	subseq r2,r2,#1
+	bne bgMonoLoop
+	subs r2,r2,#1
 	bne bgMono
 
 	bx lr
