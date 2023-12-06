@@ -29,8 +29,9 @@
 	.global k2GEConvertTiles
 	.global k2GEBufferWindows
 	.global k2GE_R
+	.global k2GE_R_W
 	.global k2GE_W
-
+	.global k2GE_W_W
 
 	.syntax unified
 	.arm
@@ -235,8 +236,21 @@ k2GEBufferWindows:
 	strh r1,[geptr,#windowData+2]
 
 	bx lr
+
 ;@----------------------------------------------------------------------------
-k2GE_R:						;@ I/O read (0x8000-0x8FFF)
+k2GE_R_W:					;@ I/O read word (0x8000-0x8FFF)
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r4,lr}
+	mov r3,r0
+	bl k2GE_R
+	mov r4,r0
+	add r0,r3,#1
+	bl k2GE_R
+	orr r0,r4,r0,lsl#8
+	ldmfd sp!,{r4,lr}
+	bx lr
+;@----------------------------------------------------------------------------
+k2GE_R:						;@ I/O read byte (0x8000-0x8FFF)
 ;@----------------------------------------------------------------------------
 	ands r2,r0,#0x0F00
 	ldrne pc,[pc,r2,lsr#6]
@@ -497,7 +511,15 @@ k2GESpriteR:				;@ 0x8800-0x88FF, 0x8C00-0x8C3F
 	bx lr
 
 ;@----------------------------------------------------------------------------
-k2GE_W:						;@ I/O write (0x8000-0x8FFF)
+k2GE_W_W:					;@ I/O write word (0x8000-0x8FFF)
+;@----------------------------------------------------------------------------
+	stmfd sp!,{r0,r1,lr}
+	bl k2GE_W
+	ldmfd sp!,{r0,r1,lr}
+	mov r0,r0,lsr#8
+	add r1,r1,#1
+;@----------------------------------------------------------------------------
+k2GE_W:						;@ I/O write byte (0x8000-0x8FFF)
 ;@----------------------------------------------------------------------------
 	ands r2,r1,#0x0F00
 	ldrne pc,[pc,r2,lsr#6]
