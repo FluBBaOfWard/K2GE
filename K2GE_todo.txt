@@ -2,4 +2,6 @@ SNK K2GE To do
 --------------
 
 	Split sprite write in 2 different (lower/upper) functions.
+	Add sprite multiplexing support.
+	Add update of palette during screen.
 

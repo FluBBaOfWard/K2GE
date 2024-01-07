@@ -3,7 +3,7 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2023 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
 //
 // SNK K2GE Graphics Engine emulation
 
@@ -22,6 +22,7 @@
 	.global k2GESaveState
 	.global k2GELoadState
 	.global k2GEGetStateSize
+	.global k2GEEnableBufferMode
 	.global k2GEDoScanline
 	.global copyScrollValues
 	.global k2GEConvertTileMaps
@@ -83,7 +84,7 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 	mov r0,#0
 	stmia geptr,{r0-r2}			;@ Reset scanline, nextChange & lineState
 
-	ldmfd sp!,{r0-r3,lr}
+	ldmfd sp!,{r0-r3}
 	cmp r0,#0
 	adreq r0,dummyIrqFunc
 	cmp r1,#0
@@ -118,6 +119,9 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 	ldr r1,=k2GEExtraPtr
 	str r0,[r1],#4
 
+	mov r0,#1
+	bl k2GEEnableBufferMode
+	ldmfd sp!,{lr}
 	b k2GERegistersReset
 
 dummyIrqFunc:
@@ -149,6 +153,19 @@ k2GERegistersReset:
 	strh r0,[r1,#0xE0]			;@ 0x83E0. Default background colour
 	strh r0,[r1,#0xF0]			;@ 0x83F0. Default window colour
 
+	bx lr
+;@----------------------------------------------------------------------------
+k2GEEnableBufferMode:		;@ In r0 = disable=0 / enable!=0.
+	.type   k2GEEnableBufferMode STT_FUNC
+;@----------------------------------------------------------------------------
+	strb r0,[geptr,#kgeBuffSetting]
+	cmp r0,#0
+	ldreq r0,[geptr,#gfxRAM]
+	ldrne r0,[geptr,#gfxRAMSwap]
+	ldreq r1,=DIRTYTILES
+	ldrne r1,=DIRTYTILES2
+	str r0,[geptr,#gfxRAMBuffPtr]	;@ Direct or buffered gfxRAM
+	str r1,[geptr,#dirtyPtr]		;@ Direct or buffered dirtyTiles
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GESaveState:				;@ In r0=destination, r1=geptr. Out r0=state size.
@@ -799,13 +816,13 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	stmfd sp!,{r4-r11,lr}
 
 
-	ldr r1,[geptr,#gfxRAMSwap]	;@ Source
+	ldr r1,[geptr,#gfxRAMBuffPtr]	;@ Source
 	ldr r6,=0xFE00FE00
 	ldr r7,=0xC000C000
 	ldr r8,=0x20002000
 	ldr r9,=0x1E001E00
 	ldr r10,=0x44444444
-	ldr r11,=DIRTYTILES2
+	ldr r11,[geptr,#dirtyPtr]	;@ DirtyTiles
 	mov r2,#64					;@ Row count
 
 	adr lr,bgRet0
@@ -814,14 +831,15 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	beq bgColor
 	bne bgMono
 bgRet0:
-noChange:
 	ldmfd sp!,{r4-r11,pc}
 
 ;@----------------------------------------------------------------------------
 midFrame:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
-	bl k2GETransferVRAM
+	ldrb r0,[geptr,#kgeBuffSetting]
+	cmp r0,#0
+	blne k2GETransferVRAM
 	ldr r0,=tmpOamBuffer		;@ Destination
 	ldr r0,[r0]
 	bl k2GEConvertSprites
@@ -930,10 +948,7 @@ checkScanlineIRQ:
 	ldmfd sp!,{pc}
 
 ;@----------------------------------------------------------------------------
-tData:
-	.long DIRTYTILES
 cData:
-	.long DIRTYTILES2+0x100		;@ Skip tilemap
 	.long CHR_DECODE
 	.long BG_GFX+0x08000		;@ BGR tiles
 	.long BG_GFX+0x0C000		;@ BGR tiles2
@@ -943,11 +958,10 @@ cData:
 k2GETransferVRAM:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
-	adr r0,tData
-	ldmia r0,{r5}
-	add r6,r5,#0x300
+	ldr r5,=DIRTYTILES
 	ldr r0,[geptr,#gfxRAMSwap]
 	ldr r1,[geptr,#gfxRAM]
+	add r6,r5,#0x300
 	mov r2,#0
 	ldr r7,=0x44444444
 
@@ -986,9 +1000,11 @@ k2GEConvertTiles:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 	adr r0,cData
-	ldmia r0,{r5-r10}
-	ldr r4,[geptr,#gfxRAMSwap]
-	add r4,r4,#0x1000
+	ldmia r0,{r6-r10}
+	ldr r4,[geptr,#gfxRAMBuffPtr]
+	add r4,r4,#0x1000			;@ Skip tilemap
+	ldr r5,[geptr,#dirtyPtr]
+	add r5,r5,#0x100			;@ Skip tilemap
 	mov r1,#0
 	mov r2,#0xFF
 	mov r2,r2,lsl#1

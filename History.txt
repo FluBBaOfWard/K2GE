@@ -2,6 +2,9 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
+V0.5.4 - 2024-01-07 (FluBBa)
+	Added enable/disable of VRAM buffering.
+
 V0.5.3 - 2023-12-06 (FluBBa)
 	Added word access to registers.
 	Fixed sprite chain handling.

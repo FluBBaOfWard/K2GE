@@ -3,7 +3,7 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2023 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
 //
 // ASM header for the SNK K1GE/K2GE Graphics Engine emulator
 //
@@ -52,7 +52,6 @@ kgeModeChange:	.byte 0
 
 kgeLedOnOff:	.byte 0		;@ Bit 0, Led On/Off.
 kgeModel:		.byte 0		;@ SOC_K2GE / SOC_K1GE.
-//kgePadding1:	.space 1
 
 scrollLine: 	.long 0 	;@ Last write to scroll registers was when?
 
@@ -60,10 +59,14 @@ ledCounter:		.long 0
 windowData:		.long 0
 k2GEStateSize:
 
+kgeBuffSetting:	.byte 0
+kgePadding1:	.space 3
+
 frameIrqFunc:	.long 0		;@ V-Blank Irq
 hblankIrqFunc:	.long 0		;@ H-Blank Irq
 
-dirtyTiles:		.space 4
+dirtyPtr:		.long 0
+gfxRAMBuffPtr:	.long 0
 gfxRAM:			.long 0		;@ 0x3000
 sprRAM:			.long 0		;@ 0x0140
 paletteMonoRAM:	.long 0		;@ 0x0020

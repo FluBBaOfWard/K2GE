@@ -3,7 +3,7 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2023 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
 //
 // SNK K1GE/K2GE Graphics Engine emulation
 
@@ -34,37 +34,40 @@ typedef struct {
 
 //k2GEState:
 //k2GERegs:					// 0-4
-	u8 kgeWinXPos;
-	u8 kgeWinYPos;
-	u8 kgeWinXSize;
-	u8 kgeWinYSize;
-	u8 kgeBGXScroll[2];
-	u8 kgeBGYScroll[2];
-	u8 kgeFGXScroll[2];
-	u8 kgeFGYScroll[2];
+	u8 winXPos;
+	u8 winYPos;
+	u8 winXSize;
+	u8 winYSize;
+	u8 bgXScroll[2];
+	u8 bgYScroll[2];
+	u8 fgXScroll[2];
+	u8 fgYScroll[2];
 
-	u8 kgeSprXOfs;
-	u8 kgeSprYOfs;
-	u8 kgeIrqEnable;
-	u8 kgeRef;
-	u8 kgeBGCol;
-	u8 kgeBGPrio;
-	u8 kgeLedEnable;
-	u8 kgeLedBlink;
-	u8 kgeMode;
-	u8 kgeModeChange;
+	u8 sprXOfs;
+	u8 sprYOfs;
+	u8 irqEnable;
+	u8 ref;
+	u8 bgCol;
+	u8 bgPrio;
+	u8 ledEnable;
+	u8 ledBlink;
+	u8 mode;
+	u8 modeChange;
 
-	u8 kgeLedOnOff;			// Bit 0, Led On/Off.
-	u8 kgeModel;
-//	u8 koPadding1[1];
+	u8 ledOnOff;			// Bit 0, Led On/Off.
+	u8 model;
 
 	u32 ledCounter;
 	u32 windowData;
 
+	u8 buffSetting;
+	u8 padding1[3];
+
 	void *hblankIrqFunc;
 	void *frameIrqFunc;
 
-	u8 dirtyTiles[4];
+	void *dirtyPtr;
+	void *gfxRAMBuffPtr;
 	void *gfxRAM;
 	void *sprRAM;
 	void *paletteMonoRAM;
@@ -97,6 +100,12 @@ int k2GELoadState(K2GE *chip, const void *source);
  * @return The size of the state.
  */
 int k2GEGetStateSize(void);
+
+/**
+ * Enables/disables buffered VRAM mode.
+ * @param  enable: Enable buffered VRAM mode.
+ */
+void k2GEEnableBufferMode(bool enable);
 
 void k2GEDoScanline(void);
 void k2GEConvertTileMaps(void *destination);

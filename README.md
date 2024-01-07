@@ -1,4 +1,4 @@
-# K2GE V0.5.3
+# K2GE V0.5.4
 
 SNK Neogeo Pocket K2GE video chip emulator for GBA/NDS.
 
