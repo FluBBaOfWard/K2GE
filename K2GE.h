@@ -101,12 +101,6 @@ int k2GELoadState(K2GE *chip, const void *source);
  */
 int k2GEGetStateSize(void);
 
-/**
- * Enables/disables buffered VRAM mode.
- * @param  enable: Enable buffered VRAM mode.
- */
-void k2GEEnableBufferMode(bool enable);
-
 void k2GEDoScanline(void);
 void k2GEConvertTileMaps(void *destination);
 void k2GEConvertSprites(void *destination);

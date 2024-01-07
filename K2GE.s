@@ -155,8 +155,7 @@ k2GERegistersReset:
 
 	bx lr
 ;@----------------------------------------------------------------------------
-k2GEEnableBufferMode:		;@ In r0 = disable=0 / enable!=0.
-	.type   k2GEEnableBufferMode STT_FUNC
+k2GEEnableBufferMode:		;@ In r0 = disable=0 / enable!=0. geptr initialized.
 ;@----------------------------------------------------------------------------
 	strb r0,[geptr,#kgeBuffSetting]
 	cmp r0,#0
