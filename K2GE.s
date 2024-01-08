@@ -852,19 +852,18 @@ endFrame:
 ;@----------------------------------------------------------------------------
 checkFrameIRQ:
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{geptr,lr}
-	mov r2,#0x32
+	stmfd sp!,{geptr}
+	mov r2,#0x32				;@ Register 0x8032
 	ldrb r0,[geptr,#kgeBGXScroll]
 	bl k2GEBgScrXW
-	ldmfd sp!,{lr}
 	bl endFrameGfx
 
 	ldrb r0,[geptr,#kgeIrqEnable]
 	tst r0,#0x80				;@ VBlank IRQ
 	movne lr,pc
 	ldrne pc,[geptr,#frameIrqFunc]
-	ldmfd sp!,{geptr,lr}
-	bx lr
+	mov r0,#0					;@ Must return 0 to end frame.
+	ldmfd sp!,{geptr,pc}
 ;@----------------------------------------------------------------------------
 frameEndHook:
 	ldrb r0,[geptr,#kgeLedOnOff]
@@ -892,7 +891,7 @@ noLedBlink:
 	mov r0,#0
 	stmia geptr,{r0-r2}			;@ Reset scanline, nextChange & lineState
 
-//	mov r0,#0					;@ Must return 0 to end frame.
+	mov r0,#1
 	ldmfd sp!,{pc}
 
 ;@----------------------------------------------------------------------------
@@ -1061,9 +1060,8 @@ tileLoop16_1p:
 ;@ hv_CCCCnnnnnnnnn
 bgColor:
 	ldr r3,[r11],#4			;@ Dirtytiles
-	and r3,r3,r3,lsr#16
-	ands r3,r3,r3,lsr#8
-	beq bgColorRow
+	teq r3,r10
+	bne bgColorRow
 	add r1,r1,#0x40
 	add r0,r0,#0x40
 	subs r2,r2,#1
@@ -1081,7 +1079,7 @@ bgColorLoop:
 	and r4,r7,r4,lsl#1
 	orr r3,r3,r4,lsr#4			;@ XY flip
 
-	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM
 	tst r0,#0x3C				;@ 32 tiles wide
 	bne bgColorLoop
 	subs r2,r2,#1
@@ -1101,9 +1099,8 @@ bgColorLoop:
 ;@ hvC____nnnnnnnnn
 bgMono:
 	ldr r3,[r11],#4			;@ Dirtytiles
-	and r3,r3,r3,lsr#16
-	ands r3,r3,r3,lsr#8
-	beq bgMonoRow
+	teq r3,r10
+	bne bgMonoRow
 	add r1,r1,#0x40
 	add r0,r0,#0x40
 	subs r2,r2,#1
@@ -1121,7 +1118,7 @@ bgMonoLoop:
 	and r4,r7,r4,lsl#1
 	orr r3,r3,r4,lsr#4			;@ XY flip
 
-	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM, foreground
+	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM
 	tst r0,#0x3C				;@ 32 tiles wide
 	bne bgMonoLoop
 	subs r2,r2,#1
