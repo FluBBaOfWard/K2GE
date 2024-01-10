@@ -34,10 +34,10 @@ kgeWinXPos:		.byte 0		;@ Window X-Position
 kgeWinYPos:		.byte 0		;@ Window Y-Position
 kgeWinXSize:	.byte 0		;@ Window X-Size
 kgeWinYSize:	.byte 0		;@ Window Y-Size
-kgeBGXScroll:	.byte 0,0	;@ Background X-Scroll
-kgeBGYScroll:	.byte 0,0	;@ Background Y-Scroll
 kgeFGXScroll:	.byte 0,0	;@ Foreground X-Scroll
 kgeFGYScroll:	.byte 0,0	;@ Foreground Y-Scroll
+kgeBGXScroll:	.byte 0,0	;@ Background X-Scroll
+kgeBGYScroll:	.byte 0,0	;@ Background Y-Scroll
 
 kgeSprXOfs:		.byte 0
 kgeSprYOfs:		.byte 0

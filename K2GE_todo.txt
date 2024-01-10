@@ -1,6 +1,8 @@
 SNK K2GE To do
 --------------
 
+	Use scroll registers to update priority. Set BG0 & 1 to use same tile maps,
+	 only show top/bottom of map depending on priority.
 	Split sprite write in 2 different (lower/upper) functions.
 	Add sprite multiplexing support.
 	Add update of palette during screen.

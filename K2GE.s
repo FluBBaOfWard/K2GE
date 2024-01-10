@@ -138,8 +138,8 @@ k2GERegistersReset:
 	strb r0,[geptr,#kgeBGCol]
 	strh r0,[geptr,#kgeSprXOfs]
 	strb r0,[geptr,#kgeBGPrio]
-	str r0,[geptr,#kgeBGXScroll]
 	str r0,[geptr,#kgeFGXScroll]
+	str r0,[geptr,#kgeBGXScroll]
 	strh r0,[geptr,#kgeWinXPos]		;@ Window pos
 	mov r0,#0xFFFFFFFF
 	strh r0,[geptr,#kgeWinXSize]	;@ Window size
@@ -343,10 +343,10 @@ k2GERegistersR:
 	.long k2GEBadR				;@ 0x802F
 	.long k2GEBgPrioR			;@ 0x8030
 	.long k2GEBadR				;@ 0x8031
-	.long k2GEBgScrXR			;@ 0x8032
-	.long k2GEBgScrYR			;@ 0x8033
-	.long k2GEFgScrXR			;@ 0x8034
-	.long k2GEFgScrYR			;@ 0x8035
+	.long k2GEFgScrXR			;@ 0x8032
+	.long k2GEFgScrYR			;@ 0x8033
+	.long k2GEBgScrXR			;@ 0x8034
+	.long k2GEBgScrYR			;@ 0x8035
 k2GEBadR:
 	mov r11,r11					;@ No$GBA breakpoint
 	ldr r1,=0x826EBAD0
@@ -423,27 +423,27 @@ k2GESprOfsYR:				;@ 0x8021
 ;@----------------------------------------------------------------------------
 k2GEBgPrioR:				;@ 0x8030
 ;@----------------------------------------------------------------------------
-	ldrb r0,[geptr,#kgeBGPrio]
+	ldrb r0,[geptr,#kgeBGPrio]	;@ Bit 7=1 BG is top
 	bx lr
 ;@----------------------------------------------------------------------------
-k2GEBgScrXR:				;@ 0x8032, Background Horizontal Scroll register
-;@----------------------------------------------------------------------------
-	ldrb r0,[geptr,#kgeBGXScroll]
-	bx lr
-;@----------------------------------------------------------------------------
-k2GEBgScrYR:				;@ 0x8033
-;@----------------------------------------------------------------------------
-	ldrb r0,[geptr,#kgeBGYScroll]
-	bx lr
-;@----------------------------------------------------------------------------
-k2GEFgScrXR:				;@ 0x8034
+k2GEFgScrXR:				;@ 0x8032, Foreground Horizontal Scroll register
 ;@----------------------------------------------------------------------------
 	ldrb r0,[geptr,#kgeFGXScroll]
 	bx lr
 ;@----------------------------------------------------------------------------
-k2GEFgScrYR:				;@ 0x8035
+k2GEFgScrYR:				;@ 0x8033, Foreground Vertical Scroll register
 ;@----------------------------------------------------------------------------
 	ldrb r0,[geptr,#kgeFGYScroll]
+	bx lr
+;@----------------------------------------------------------------------------
+k2GEBgScrXR:				;@ 0x8034, Background Horizontal Scroll register
+;@----------------------------------------------------------------------------
+	ldrb r0,[geptr,#kgeBGXScroll]
+	bx lr
+;@----------------------------------------------------------------------------
+k2GEBgScrYR:				;@ 0x8035, Background Vertical Scroll register
+;@----------------------------------------------------------------------------
+	ldrb r0,[geptr,#kgeBGYScroll]
 	bx lr
 ;@----------------------------------------------------------------------------
 k2GEPaletteMonoR:			;@ 0x8100-0x8118
@@ -614,10 +614,10 @@ k2GERegistersW:
 	.long k2GEBadW				;@ 0x802F
 	.long k2GEBgPrioW			;@ 0x8030
 	.long k2GEBadW				;@ 0x8031
-	.long k2GEBgScrXW			;@ 0x8032
-	.long k2GEBgScrYW			;@ 0x8033
-	.long k2GEFgScrXW			;@ 0x8034
-	.long k2GEFgScrYW			;@ 0x8035
+	.long k2GEFgScrXW			;@ 0x8032
+	.long k2GEFgScrYW			;@ 0x8033
+	.long k2GEBgScrXW			;@ 0x8034
+	.long k2GEBgScrYW			;@ 0x8035
 k2GEBadW:
 								;@ Cool Boarders writes 0x80 to 0x8011 and lots of values to 8036.
 	mov r11,r11					;@ No$GBA breakpoint
@@ -671,26 +671,33 @@ k2GESprOfsYW:				;@ 0x8021
 ;@----------------------------------------------------------------------------
 k2GEBgPrioW:				;@ 0x8030
 ;@----------------------------------------------------------------------------
-	strb r0,[geptr,#kgeBGPrio]
-	bx lr
-;@----------------------------------------------------------------------------
-k2GEBgScrXW:				;@ 0x8032, Background Horizontal Scroll register
-;@----------------------------------------------------------------------------
-;@----------------------------------------------------------------------------
-k2GEBgScrYW:				;@ 0x8033, Background Vertical Scroll register
-;@----------------------------------------------------------------------------
-;@----------------------------------------------------------------------------
-k2GEFgScrXW:				;@ 0x8034, Foreground Horizontal Scroll register
-;@----------------------------------------------------------------------------
-;@----------------------------------------------------------------------------
-k2GEFgScrYW:				;@ 0x8035, Foreground Vertical Scroll register
-;@----------------------------------------------------------------------------
-	add r1,r2,#(kgeBGXScroll/2) - 0x32
+	strb r0,[geptr,#kgeBGPrio]	;@ Bit 7=1 BG is top
 #ifdef NDS
-	ldrd r2,r3,[geptr,#kgeBGXScroll]
+	ldrd r2,r3,[geptr,#kgeFGXScroll]
 #else
-	ldr r2,[geptr,#kgeBGXScroll]
-	ldr r3,[geptr,#kgeFGXScroll]
+	ldr r2,[geptr,#kgeFGXScroll]
+	ldr r3,[geptr,#kgeBGXScroll]
+#endif
+	strb r0,[geptr,#kgeFGXScroll+1]
+	b scrollCnt
+;@----------------------------------------------------------------------------
+k2GEFgScrXW:				;@ 0x8032, Foreground Horizontal Scroll register
+;@----------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+k2GEFgScrYW:				;@ 0x8033, Foreground Vertical Scroll register
+;@----------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+k2GEBgScrXW:				;@ 0x8034, Background Horizontal Scroll register
+;@----------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+k2GEBgScrYW:				;@ 0x8035, Background Vertical Scroll register
+;@----------------------------------------------------------------------------
+	add r1,r2,#(kgeFGXScroll/2) - 0x32
+#ifdef NDS
+	ldrd r2,r3,[geptr,#kgeFGXScroll]
+#else
+	ldr r2,[geptr,#kgeFGXScroll]
+	ldr r3,[geptr,#kgeBGXScroll]
 #endif
 	strb r0,[geptr,r1,lsl#1]
 scrollCnt:
@@ -854,8 +861,8 @@ checkFrameIRQ:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{geptr}
 	mov r2,#0x32				;@ Register 0x8032
-	ldrb r0,[geptr,#kgeBGXScroll]
-	bl k2GEBgScrXW
+	ldrb r0,[geptr,#kgeFGXScroll]
+	bl k2GEFgScrXW
 	bl endFrameGfx
 
 	ldrb r0,[geptr,#kgeIrqEnable]

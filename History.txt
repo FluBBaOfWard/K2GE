@@ -2,7 +2,7 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.5.4 - 2024-01-08 (FluBBa)
+V0.5.4 - 2024-01-10 (FluBBa)
 	Added enable/disable of VRAM buffering.
 	Better synchronization of updates.
 
