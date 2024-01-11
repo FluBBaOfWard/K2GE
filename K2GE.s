@@ -678,6 +678,7 @@ k2GEBgPrioW:				;@ 0x8030
 	ldr r2,[geptr,#kgeFGXScroll]
 	ldr r3,[geptr,#kgeBGXScroll]
 #endif
+	and r0,r0,#0x80
 	strb r0,[geptr,#kgeFGXScroll+1]
 	b scrollCnt
 ;@----------------------------------------------------------------------------
@@ -825,8 +826,7 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	ldr r1,[geptr,#gfxRAMBuffPtr]	;@ Source
 	ldr r6,=0xFE00FE00
 	ldr r7,=0xC000C000
-	ldr r8,=0x20002000
-	ldr r9,=0x1E001E00
+	mov r9,#0					;@ Extra bit for bg tiles
 	ldr r10,=0x44444444
 	ldr r11,[geptr,#dirtyPtr]	;@ DirtyTiles
 	mov r2,#64					;@ Row count
@@ -834,6 +834,8 @@ k2GEConvertTileMaps:		;@ r0 = destination
 	adr lr,bgRet0
 	ldrb r3,[geptr,#kgeMode]	;@ Color mode
 	tst r3,#0x80
+	ldreq r8,=0x1E001E00
+	ldrne r8,=0x20002000
 	beq bgColor
 	bne bgMono
 bgRet0:
@@ -1059,14 +1061,16 @@ tileLoop16_1p:
 ;@----------------------------------------------------------------------------
 ;@	r6=0xFE00FE00
 ;@	r7=0xC000C000
-;@	r8=0x20002000
-;@	r9=0x1E001E00
+;@	r8=0x1E001E00
+;@  r9=0x0						;@ Extra bit for bg tiles
 ;@ r10=0x44444444
 ;@ r11=DIRTYTILES
 ;@ MSB          LSB
 ;@ hv_CCCCnnnnnnnnn
 bgColor:
-	ldr r3,[r11],#4			;@ Dirtytiles
+	cmp r2,#0x20				;@ Are we on BG?
+	ldreq r9,=0x02000200		;@ Extra bit for bg tiles
+	ldr r3,[r11],#4				;@ Dirtytiles
 	teq r3,r10
 	bne bgColorRow
 	add r1,r1,#0x40
@@ -1079,12 +1083,14 @@ bgColorRow:
 bgColorLoop:
 	ldr r4,[r1],#4				;@ Read from NeoGeo Pocket Tilemap RAM
 	bic r3,r4,r6
-	and r5,r4,r9
+	and r5,r4,r8
 	orr r3,r3,r5,lsl#3			;@ Color
 	and r4,r4,r7				;@ Mask NGP flip bits
 	orr r4,r4,r4,lsr#2
 	and r4,r7,r4,lsl#1
 	orr r3,r3,r4,lsr#4			;@ XY flip
+	cmp r2,#0x20				;@ Are we on BG?
+	orrle r3,r3,r9
 
 	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM
 	tst r0,#0x3C				;@ 32 tiles wide
@@ -1099,13 +1105,15 @@ bgColorLoop:
 ;@	r6=0xFE00FE00
 ;@	r7=0xC000C000
 ;@	r8=0x20002000
-;@	r9=0x1E001E00
+;@  r9=0x0						;@ Extra bit for bg tiles
 ;@ r10=0x44444444
 ;@ r11=DIRTYTILES
 ;@ MSB          LSB
 ;@ hvC____nnnnnnnnn
 bgMono:
-	ldr r3,[r11],#4			;@ Dirtytiles
+	cmp r2,#0x20				;@ Are we on BG?
+	ldreq r9,=0x02000200		;@ Extra bit for bg tiles
+	ldr r3,[r11],#4				;@ Dirtytiles
 	teq r3,r10
 	bne bgMonoRow
 	add r1,r1,#0x40
@@ -1124,6 +1132,7 @@ bgMonoLoop:
 	orr r4,r4,r4,lsr#2
 	and r4,r7,r4,lsl#1
 	orr r3,r3,r4,lsr#4			;@ XY flip
+	orr r3,r3,r9
 
 	str r3,[r0],#4				;@ Write to GBA/NDS Tilemap RAM
 	tst r0,#0x3C				;@ 32 tiles wide
@@ -1136,23 +1145,34 @@ bgMonoLoop:
 ;@----------------------------------------------------------------------------
 copyScrollValues:			;@ r0 = destination
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r5}
+	stmfd sp!,{r4-r7}
 	ldr r1,[geptr,#scrollBuff]
 
-	mov r2,#(SCREEN_HEIGHT-GAME_HEIGHT)/2
-	add r0,r0,r2,lsl#3			;@ 8 bytes per row
+	mov r6,#(SCREEN_HEIGHT-GAME_HEIGHT)/2
+	add r0,r0,r6,lsl#3			;@ 8 bytes per row
 	mov r4,#0x100-(SCREEN_WIDTH-GAME_WIDTH)/2
-	sub r4,r4,r2,lsl#16
+	sub r4,r4,r6,lsl#16
 	mov r5,#GAME_HEIGHT
 setScrlLoop:
 	ldmia r1!,{r2,r3}
 	add r2,r2,r4
 	add r3,r3,r4
+	add r7,r2,r6,lsl#16
+	tst r7,#0x1000000
+	subne r2,r2,#0x1000000
+	add r7,r3,r6,lsl#16
+	tst r7,#0x1000000
+	addeq r3,r3,#0x1000000
+	tst r2,#0x8000
+	movne r7,r2
+	movne r2,r3
+	movne r3,r7
 	stmia r0!,{r2,r3}
+	add r6,r6,#1
 	subs r5,r5,#1
 	bne setScrlLoop
 
-	ldmfd sp!,{r4-r5}
+	ldmfd sp!,{r4-r7}
 	bx lr
 
 ;@----------------------------------------------------------------------------
