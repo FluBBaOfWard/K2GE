@@ -1145,34 +1145,32 @@ bgMonoLoop:
 ;@----------------------------------------------------------------------------
 copyScrollValues:			;@ r0 = destination
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r7}
+	stmfd sp!,{r4-r6}
 	ldr r1,[geptr,#scrollBuff]
 
-	mov r6,#(SCREEN_HEIGHT-GAME_HEIGHT)/2
-	add r0,r0,r6,lsl#3			;@ 8 bytes per row
+	mov r6,#((SCREEN_HEIGHT-GAME_HEIGHT)/2)<<23
+	add r0,r0,r6,lsr#20			;@ 8 bytes per row
 	mov r4,#0x100-(SCREEN_WIDTH-GAME_WIDTH)/2
-	sub r4,r4,r6,lsl#16
+	sub r4,r4,r6,lsr#7
 	mov r5,#GAME_HEIGHT
 setScrlLoop:
 	ldmia r1!,{r2,r3}
 	add r2,r2,r4
 	add r3,r3,r4
-	add r7,r2,r6,lsl#16
-	tst r7,#0x1000000
-	subne r2,r2,#0x1000000
-	add r7,r3,r6,lsl#16
-	tst r7,#0x1000000
-	addeq r3,r3,#0x1000000
+	cmn r6,r2,lsl#7
+	submi r2,r2,#0x1000000
+	cmn r6,r3,lsl#7
+	addpl r3,r3,#0x1000000
 	tst r2,#0x8000
-	movne r7,r2
-	movne r2,r3
-	movne r3,r7
+	eorne r2,r2,r3
+	eorne r3,r3,r2
+	eorne r2,r2,r3
 	stmia r0!,{r2,r3}
-	add r6,r6,#1
+	add r6,r6,#0x00800000
 	subs r5,r5,#1
 	bne setScrlLoop
 
-	ldmfd sp!,{r4-r7}
+	ldmfd sp!,{r4-r6}
 	bx lr
 
 ;@----------------------------------------------------------------------------
