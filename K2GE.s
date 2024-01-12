@@ -679,7 +679,7 @@ k2GEBgPrioW:				;@ 0x8030
 	ldr r3,[geptr,#kgeBGXScroll]
 #endif
 	and r0,r0,#0x80
-	strb r0,[geptr,#kgeFGXScroll+1]
+	strb r0,[geptr,#kgeFGYScroll+1]
 	b scrollCnt
 ;@----------------------------------------------------------------------------
 k2GEFgScrXW:				;@ 0x8032, Foreground Horizontal Scroll register
@@ -1145,32 +1145,30 @@ bgMonoLoop:
 ;@----------------------------------------------------------------------------
 copyScrollValues:			;@ r0 = destination
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r6}
+	stmfd sp!,{r4-r7}
 	ldr r1,[geptr,#scrollBuff]
 
 	mov r6,#((SCREEN_HEIGHT-GAME_HEIGHT)/2)<<23
 	add r0,r0,r6,lsr#20			;@ 8 bytes per row
-	mov r4,#0x100-(SCREEN_WIDTH-GAME_WIDTH)/2
-	sub r4,r4,r6,lsr#7
+	mov r4,#(0x100-(SCREEN_WIDTH-GAME_WIDTH)/2)<<7
+	sub r4,r4,r6
 	mov r5,#GAME_HEIGHT
 setScrlLoop:
 	ldmia r1!,{r2,r3}
-	add r2,r2,r4
-	add r3,r3,r4
+	add r2,r2,r4,lsr#7
+	add r3,r3,r4,lsr#7
 	cmn r6,r2,lsl#7
-	submi r2,r2,#0x1000000
+	eormi r2,r2,#0x1000000
 	cmn r6,r3,lsl#7
-	addpl r3,r3,#0x1000000
-	tst r2,#0x8000
-	eorne r2,r2,r3
-	eorne r3,r3,r2
-	eorne r2,r2,r3
-	stmia r0!,{r2,r3}
-	add r6,r6,#0x00800000
+	eorpl r3,r3,#0x1000000
+	movs r7,r2					;@ Also checks BG priority.
+	stmiapl r0!,{r2,r3}
+	stmiami r0!,{r3,r7}
+	add r6,r6,#1<<23
 	subs r5,r5,#1
 	bne setScrlLoop
 
-	ldmfd sp!,{r4-r6}
+	ldmfd sp!,{r4-r7}
 	bx lr
 
 ;@----------------------------------------------------------------------------
