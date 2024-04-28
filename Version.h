@@ -1,1 +1,1 @@
-#define K2GEVERSION "V0.5.4"
+#define K2GEVERSION "V0.5.5"

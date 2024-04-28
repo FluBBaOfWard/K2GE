@@ -8,6 +8,10 @@
 // ASM header for the SNK K1GE/K2GE Graphics Engine emulator
 //
 
+#if !__ASSEMBLER__
+	#error This header file is only for use in assembly files!
+#endif
+
 #define HW_AUTO       (0)
 #define HW_NGPMONO    (1)
 #define HW_NGPCOLOR   (2)

@@ -1,6 +1,6 @@
 //
 //  K2GE.s
-//  K2GE
+//  NeoGeo Pocket Video emulation for GBA/NDS.
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
 //  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
@@ -37,7 +37,7 @@
 	.syntax unified
 	.arm
 
-#if GBA
+#ifdef GBA
 	.section .ewram, "ax", %progbits	;@ For the GBA
 #else
 	.section .text						;@ For anything else
@@ -46,26 +46,22 @@
 ;@----------------------------------------------------------------------------
 k2GEInit:					;@ Only need to be called once
 ;@----------------------------------------------------------------------------
+	ldr r0,=CHR_DECODE			;@ Destination 0x400
 	mov r1,#0xffffff00			;@ Build chr decode tbl
-	ldr r2,=CHR_DECODE
 chrLutLoop:
-	ands r0,r1,#0x01
-	movne r0,#0x1000
-	tst r1,#0x02
-	orrne r0,r0,#0x2000
-	tst r1,#0x04
-	orrne r0,r0,#0x0100
-	tst r1,#0x08
-	orrne r0,r0,#0x0200
-	tst r1,#0x10
-	orrne r0,r0,#0x0010
-	tst r1,#0x20
-	orrne r0,r0,#0x0020
-	tst r1,#0x40
-	orrne r0,r0,#0x0001
-	tst r1,#0x80
-	orrne r0,r0,#0x0002
-	strh r0,[r2],#2
+	movs r2,r1,lsl#31
+	movne r2,#0x1000
+	orrcs r2,r2,#0x2000
+	tst r1,r1,lsl#29
+	orrmi r2,r2,#0x0100
+	orrcs r2,r2,#0x0200
+	tst r1,r1,lsl#27
+	orrmi r2,r2,#0x0010
+	orrcs r2,r2,#0x0020
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x0001
+	orrcs r2,r2,#0x0002
+	strh r2,[r0],#2
 	adds r1,r1,#1
 	bne chrLutLoop
 
