@@ -2,7 +2,7 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.5.5 - 2024-04-28 (FluBBa)
+V0.5.5 - 2024-05-12 (FluBBa)
 	Optimized initialization.
 
 V0.5.4 - 2024-01-12 (FluBBa)

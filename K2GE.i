@@ -66,8 +66,8 @@ k2GEStateSize:
 kgeBuffSetting:	.byte 0
 kgePadding1:	.space 3
 
-frameIrqFunc:	.long 0		;@ V-Blank Irq
-hblankIrqFunc:	.long 0		;@ H-Blank Irq
+frameIrqFunc:	.long 0		;@ V-Blank Irq func ptr
+hblankIrqFunc:	.long 0		;@ H-Blank Irq func ptr
 
 dirtyPtr:		.long 0
 gfxRAMBuffPtr:	.long 0

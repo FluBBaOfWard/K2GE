@@ -63,8 +63,8 @@ typedef struct {
 	u8 buffSetting;
 	u8 padding1[3];
 
-	void *hblankIrqFunc;
-	void *frameIrqFunc;
+	void (*hblankIrqFunc)(bool);
+	void (*frameIrqFunc)(bool);
 
 	void *dirtyPtr;
 	void *gfxRAMBuffPtr;
@@ -77,7 +77,7 @@ typedef struct {
 
 } K2GE;
 
-void k2GEReset(void *frameIrqFunc(), void *periodicIrqFunc(), void *ram);
+void k2GEReset(void (*frameIrqFunc)(bool), void (*periodicIrqFunc)(bool), void *ram);
 
 /**
  * Saves the state of the chip to the destination.
