@@ -3,11 +3,10 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
 //
 // ASM header for the SNK K1GE/K2GE Graphics Engine emulator
 //
-
 #if !__ASSEMBLER__
 	#error This header file is only for use in assembly files!
 #endif
@@ -31,6 +30,7 @@
 scanline:		.long 0		;@ These 3 must be first in state.
 nextLineChange:	.long 0
 lineState:		.long 0
+kgePadding0:	.skip 4
 
 k2GEState:					;@
 k2GERegs:
@@ -64,7 +64,7 @@ windowData:		.long 0
 k2GEStateSize:
 
 kgeBuffSetting:	.byte 0
-kgePadding1:	.space 3
+kgePadding1:	.skip 3
 
 frameIrqFunc:	.long 0		;@ V-Blank Irq func ptr
 hblankIrqFunc:	.long 0		;@ H-Blank Irq func ptr

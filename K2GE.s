@@ -3,10 +3,9 @@
 //  NeoGeo Pocket Video emulation for GBA/NDS.
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
 //
 // SNK K2GE Graphics Engine emulation
-
 #ifdef __arm__
 
 #ifdef GBA
@@ -218,7 +217,7 @@ k2GEGetStateSize:	;@ Out r0=state size.
 
 ;@----------------------------------------------------------------------------
 #ifdef GBA
-	.section .ewram,"ax"
+	.section .ewram, "ax", %progbits
 #endif
 ;@----------------------------------------------------------------------------
 k2GEBufferWindows:
@@ -668,7 +667,7 @@ k2GESprOfsYW:				;@ 0x8021
 k2GEBgPrioW:				;@ 0x8030
 ;@----------------------------------------------------------------------------
 	strb r0,[geptr,#kgeBGPrio]	;@ Bit 7=1 BG is top
-#ifdef NDS
+#ifdef __ARM_ARCH_5TE__
 	ldrd r2,r3,[geptr,#kgeFGXScroll]
 #else
 	ldr r2,[geptr,#kgeFGXScroll]
@@ -690,7 +689,7 @@ k2GEBgScrXW:				;@ 0x8034, Background Horizontal Scroll register
 k2GEBgScrYW:				;@ 0x8035, Background Vertical Scroll register
 ;@----------------------------------------------------------------------------
 	add r1,r2,#(kgeFGXScroll/2) - 0x32
-#ifdef NDS
+#ifdef __ARM_ARCH_5TE__
 	ldrd r2,r3,[geptr,#kgeFGXScroll]
 #else
 	ldr r2,[geptr,#kgeFGXScroll]

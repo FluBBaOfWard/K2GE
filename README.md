@@ -11,6 +11,8 @@ SNK Neogeo Pocket K2GE video chip emulator for GBA/NDS.
 
 Fredrik Ahlström
 
-X/Twitter @TheRealFluBBa
+<https://bsky.app/profile/therealflubba.bsky.social>
 
 <https://www.github.com/FluBBaOfWard>
+
+X/Twitter @TheRealFluBBa

@@ -3,7 +3,7 @@
 //  K2GE
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
 //
 // SNK K1GE/K2GE Graphics Engine emulation
 
@@ -31,6 +31,7 @@ typedef struct {
 	u32 scanline;
 	u32 nextLineChange;
 	u32 lineState;
+	u8 padding0[4];
 
 //k2GEState:
 //k2GERegs:					// 0-4
