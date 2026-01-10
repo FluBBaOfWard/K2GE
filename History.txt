@@ -2,8 +2,9 @@ K2GE revision history
 -=-=-=-=-=-=-=-=-=-=-=-
 
 
-V0.5.5 - 2024-05-12 (FluBBa)
+V0.5.5 - 2026-01-10 (FluBBa)
 	Optimized initialization.
+	Optimized reset.
 
 V0.5.4 - 2024-01-12 (FluBBa)
 	Fixed BG priority updates mid screen (Rockman).

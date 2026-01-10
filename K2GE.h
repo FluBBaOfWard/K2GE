@@ -56,13 +56,14 @@ typedef struct {
 	u8 modeChange;
 
 	u8 ledOnOff;			// Bit 0, Led On/Off.
-	u8 model;
+	u8 padding1[1];
 
 	u32 ledCounter;
 	u32 windowData;
 
+	u8 model;
 	u8 buffSetting;
-	u8 padding1[3];
+	u8 padding2[2];
 
 	void (*hblankIrqFunc)(bool);
 	void (*frameIrqFunc)(bool);

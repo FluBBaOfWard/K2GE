@@ -55,7 +55,7 @@ kgeMode:		.byte 0
 kgeModeChange:	.byte 0
 
 kgeLedOnOff:	.byte 0		;@ Bit 0, Led On/Off.
-kgeModel:		.byte 0		;@ SOC_K2GE / SOC_K1GE.
+kgePadding1:	.skip 1
 
 scrollLine: 	.long 0 	;@ Last write to scroll registers was when?
 
@@ -63,8 +63,9 @@ ledCounter:		.long 0
 windowData:		.long 0
 k2GEStateSize:
 
+kgeModel:		.byte 0		;@ SOC_K1GE / SOC_K2GE.
 kgeBuffSetting:	.byte 0
-kgePadding1:	.skip 3
+kgePadding2:	.skip 2
 
 frameIrqFunc:	.long 0		;@ V-Blank Irq func ptr
 hblankIrqFunc:	.long 0		;@ H-Blank Irq func ptr

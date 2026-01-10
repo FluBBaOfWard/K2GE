@@ -44,42 +44,9 @@
 	.align 2
 ;@----------------------------------------------------------------------------
 k2GEInit:					;@ Only need to be called once
+;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 ;@----------------------------------------------------------------------------
-	ldr r0,=CHR_DECODE			;@ Destination 0x400
-	mov r1,#0xffffff00			;@ Build chr decode tbl
-chrLutLoop:
-	movs r2,r1,lsl#31
-	movne r2,#0x1000
-	orrcs r2,r2,#0x2000
-	tst r1,r1,lsl#29
-	orrmi r2,r2,#0x0100
-	orrcs r2,r2,#0x0200
-	tst r1,r1,lsl#27
-	orrmi r2,r2,#0x0010
-	orrcs r2,r2,#0x0020
-	tst r1,r1,lsl#25
-	orrmi r2,r2,#0x0001
-	orrcs r2,r2,#0x0002
-	strh r2,[r0],#2
-	adds r1,r1,#1
-	bne chrLutLoop
-
-	bx lr
-;@----------------------------------------------------------------------------
-k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
-;@----------------------------------------------------------------------------
-	stmfd sp!,{r0-r3,lr}
-
-	mov r0,geptr
-	ldr r1,=k2GESize/4
-	bl memclr_					;@ Clear K2GE state
-
-	ldr r2,=lineStateTable
-	ldr r1,[r2],#4
-	mov r0,#0
-	stmia geptr,{r0-r2}			;@ Reset scanline, nextChange & lineState
-
-	ldmfd sp!,{r0-r3}
+	stmfd sp!,{lr}
 	cmp r0,#0
 	adreq r0,dummyIrqFunc
 	cmp r1,#0
@@ -101,9 +68,6 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 
 	strb r3,[geptr,#kgeModel]
 	cmp r3,#SOC_K1GE
-	movne r0,#0x00				;@ Use Color mode.
-	moveq r0,#0x80				;@ Use B&W mode.
-	strb r0,[geptr,#kgeMode]
 	ldrne r0,=k2GEPaletteW
 	ldreq r0,=k2GEBadW
 	ldr r1,=k2GEPalPtr
@@ -116,6 +80,41 @@ k2GEReset:		;@ r0=frameIrqFunc, r1=hIrqFunc, r2=ram+LUTs, r3=model, r12=geptr
 
 	mov r0,#1
 	bl k2GEEnableBufferMode
+
+	ldr r0,=CHR_DECODE			;@ Destination 0x400
+	mov r1,#0xffffff00			;@ Build chr decode tbl
+chrLutLoop:
+	movs r2,r1,lsl#31
+	movne r2,#0x1000
+	orrcs r2,r2,#0x2000
+	tst r1,r1,lsl#29
+	orrmi r2,r2,#0x0100
+	orrcs r2,r2,#0x0200
+	tst r1,r1,lsl#27
+	orrmi r2,r2,#0x0010
+	orrcs r2,r2,#0x0020
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x0001
+	orrcs r2,r2,#0x0002
+	strh r2,[r0],#2
+	adds r1,r1,#1
+	bne chrLutLoop
+
+	ldmfd sp!,{lr}
+	bx lr
+;@----------------------------------------------------------------------------
+k2GEReset:		;@ r12=geptr
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+
+	mov r0,geptr
+	ldr r1,=k2GEStateSize/4
+	bl memclr_					;@ Clear K2GE state
+
+	ldr r2,=lineStateTable
+	ldr r1,[r2],#4
+	mov r0,#0
+	stmia geptr,{r0-r2}			;@ Reset scanline, nextChange & lineState
 	ldmfd sp!,{lr}
 	b k2GERegistersReset
 
@@ -147,8 +146,13 @@ k2GERegistersReset:
 	add r1,r1,#0x100
 	strh r0,[r1,#0xE0]			;@ 0x83E0. Default background colour
 	strh r0,[r1,#0xF0]			;@ 0x83F0. Default window colour
+	ldrb r1,[geptr,#kgeModel]
+	cmp r1,#SOC_K1GE
+	movne r0,#0x00				;@ Use Color mode.
+	moveq r0,#0x80				;@ Use B&W mode.
+	strb r0,[geptr,#kgeMode]
 
-	bx lr
+	b k2GEBufferWindows
 ;@----------------------------------------------------------------------------
 k2GEEnableBufferMode:		;@ In r0 = disable=0 / enable!=0. geptr initialized.
 ;@----------------------------------------------------------------------------
@@ -1237,6 +1241,7 @@ skipSprite:
 #else
 	.section .bss
 #endif
+	.align 2
 CHR_DECODE:
 	.space 0x200
 	.space 8
